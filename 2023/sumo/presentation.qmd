@@ -1,0 +1,89 @@
+---
+title: "Diffusion Models for Stochastic Fields"
+author: "Vincent Dutordoir"
+institute: "University of Cambridge"
+bibliography: references.bib
+menu: false
+slide-number: true
+progress: false
+format:
+    revealjs:
+        theme: [serif, custom.scss]
+        template-partials:
+            - title-slide.html
+---
+# Hi, I'm Vincent 👋 {.smaller}
+
+::: {.incremental}
+- Finished my Bachelor's and Masters at Ghent University in 2017
+- Moved to Cambridge (UK) straight after to work for startup PROWLER.io
+- Started my PhD in 2020
+- Senior ML researcher at Secondmind.ai
+:::
+
+---
+## Gaussian Processes {.smaller}
+
+<head>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<!--
+tab:blue : #1f77b4
+tab:orange : #ff7f0e
+tab:green : #2ca02c
+tab:red : #d62728
+tab:purple : #9467bd
+-->
+
+<style>
+h1,h2,h3,h4,h5,p {color:black!important;}
+.box {background-color:#eeeeee; padding: 4px 8px;}
+.box-highlight {background-color:#1f77b422; padding: 8px 6px;}
+</style>
+
+
+
+
+::: {.box-highlight}
+*Definition.*
+A Gaussian process is a random variable $f$ on $X$ for which
+any subset is a multivariate normal distribution
+
+$$
+\textrm{d}x = f(x)
+$$
+:::
+
+
+[a link](www.google.com)
+- Turn off alarm
+- Get out of bed
+
+## Going to sleep
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+
+::: {.box}
+ Inducing points
+:::
+
+
+:::
+
+::: {.column width="50%"}
+#### Inducing features
+:::
+
+::::
+
+@sinkhorn1967concerning
+
+
+## Refs {.smaller}
+
+::: {#refs}
+:::
