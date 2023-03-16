@@ -1,5 +1,5 @@
 ---
-title: "Diffusion Models for Stochastic Fields"
+title: "Score-based generative modelling: intro and ongoing research"
 author: "Vincent Dutordoir"
 institute: "University of Cambridge"
 bibliography: references.bib
@@ -9,81 +9,151 @@ progress: false
 format:
     revealjs:
         theme: [serif, custom.scss]
+        smaller: false
+        # Custom title slide
         template-partials:
             - title-slide.html
+        # Config below is for step-by-step walk through code
+        html-math-method: mathjax
+        include-in-header:
+        - text: |
+            <script>
+            MathJax = {
+                options: {
+                menuOptions: {
+                    settings: {
+                    assistiveMml: false
+                    }
+                }
+                }
+            };
+            </script>
+            <style>
+            h1,h2,h3,h4,h5,p {color:black!important;}
+            h1{font-size:2.5em!important}
+            h2{font-size:1.25em!important}
+            h3{font-size:1.0em!important; text-decoration: underline; font-weight: normal!important; }
+            footnotesize{font-size:65%!important}
+            scriptsize{font-size:50%!important}
+            figcaption{font-style: italic; display: flex; flex-direction: row; justify-content: center; align-items:center;}
+            .caption{font-style: italic; display: flex; flex-direction: row; justify-content: center; align-items:center;}
+            .box {background-color:#eeeeee; padding: 4px 8px;}
+            .box-highlight {background-color:#1f77b422; padding: 4px;}
+            </style>
+            <script src="https://cdn.tailwindcss.com"></script>
 ---
-# Hi, I'm Vincent 👋 {.smaller}
+::: {style="font-size:3em;" data-auto-animate=true}
+## Hi, I'm Vincent 👋
+:::
+
+::: {.hidden}
+$$
+\newcommand{\v}[1]{\boldsymbol{#1}} 
+\newcommand{\c}[1]{\mathcal{#1}} 
+\newcommand{\d}{\textrm{d}} 
+\newcommand{\R}{\mathbb{R}} 
+\newcommand{\E}{\mathbb{E}} 
+$$
+:::
+
+::: {data-auto-animate=true}
+## Hi, I'm Vincent 👋
 
 ::: {.incremental}
 - Finished my Bachelor's and Masters at Ghent University in 2017
-- Moved to Cambridge (UK) straight after to work for startup PROWLER.io
-- Started my PhD in 2020
+- Moved to Cambridge (UK) straight after to work for a startup PROWLER.io
+- Started my PhD at Cambridge University in 2020
 - Senior ML researcher at Secondmind.ai
 :::
 
----
-## Gaussian Processes {.smaller}
+:::
 
-<head>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
+## Outline
 
-<!--
-tab:blue : #1f77b4
-tab:orange : #ff7f0e
-tab:green : #2ca02c
-tab:red : #d62728
-tab:purple : #9467bd
--->
+The talk will consist of two parts:
 
-<style>
-h1,h2,h3,h4,h5,p {color:black!important;}
-.box {background-color:#eeeeee; padding: 4px 8px;}
-.box-highlight {background-color:#1f77b422; padding: 8px 6px;}
-</style>
+1. a tutorially overview of score-based generative modelling, leading to state-of-the-art diffusion models.
+2. a quick introduction
 
-
-
-
-::: {.box-highlight}
-*Definition.*
-A Gaussian process is a random variable $f$ on $X$ for which
-any subset is a multivariate normal distribution
-
-$$
-\textrm{d}x = f(x)
-$$
+::: aside
+Thanks to Michael Hutchinson, Valentin De Bortoli, Fergus Simpson, Alan Saul.
 :::
 
 
-[a link](www.google.com)
-- Turn off alarm
-- Get out of bed
+## Generative modelling
 
-## Going to sleep
+- Given: dataset $\{\v{x}_i\}_{i=1}^n$
+- Goal:  fit a model $p_\theta(\v{x})$ to the data distribution 
 
-:::: {.columns}
+<!-- Suppose we are given a dataset $\{\v{x}_i\}_{i=1}^n$, where each point is drawn independently from an underlying data distribution. Given this dataset, the goal of generative modeling is to fit a model $p_\theta(\v{x})$ to the data distribution such that we can synthesize new data points at will by sampling from the distribution. -->
 
-::: {.column width="50%"}
+![Figure: Illustration generative modelling (from: openai.com)](figures/generative_modelling.svg){width=80%}
 
+
+## Energy-based models
+
+A density defined through an *energy function* $U_\theta: \R^d \rightarrow \R$:
+$$
+p_{\theta}(\v{x}) = \frac{\textrm{e}^{-U_\theta(x)}}{Z_\theta},\quad 
+$$
+
+. . .
+
+We can fit this energy function by maximising the log likelihood:
+\begin{equation}
+    \theta^* = \max_\theta \sum_{i=1}^N \log p_\theta(\v{x}_i)
+\end{equation}
+
+. . . 
 
 ::: {.box}
- Inducing points
+Normalizing constant: $Z_\theta = \int_{\R^d} \textrm{e}^{-U_\theta(\v{x})}\d \v{x}$.
 :::
 
+## Score function
 
-:::
+Modelling the density through the score function
 
-::: {.column width="50%"}
-#### Inducing features
-:::
+$$
+\nabla_{\v{x}} \log p(\v{x})
+\approx s_\theta(\v{x}).
+$$
 
-::::
+. . .
 
-@sinkhorn1967concerning
+The score of a density is independent of the normalizing constant.
+Assume $p(x) = q(x) / Z$
+$$
+\nabla_x \log \frac{q(x)}{Z}  = \nabla_x \log q(x) - \nabla_x \log Z
+$$
 
 
-## Refs {.smaller}
 
-::: {#refs}
-:::
+
+## Langevin dynamics
+The density of $\v{x}_t$ as $t\rightarrow\infty$ for the SDE
+$$
+\d \v{x}_t = \nabla \log p(\v{x}_t) \d t + \sqrt{2} \d \v{W}_t
+$$
+is given by $p(\v{x})$, where $\v{W}_t$ is standard Brownian motion.
+
+. . .
+
+We can run this in discrete steps using Euler-Marayuma. For a small stepsize $\gamma$
+$$
+\v{x}_{k+1} = \v{x}_k + \gamma \nabla \log p(\v{x}_k) + \sqrt{2\gamma}\v{z}_k,\quad \v{z}_k \sim \c{N}(0,I).
+$$
+
+
+## Learning the score
+
+### Explicit
+
+We would like to *explicitly* match a parametric score to the (true) score, minimising, with a loss like
+\begin{equation}
+    \ell_{\mathrm{esm}}({\mathbf{s}_\theta}) \triangleq \E_{p(\v{x})}{\|\nabla_{\v{x}} \log p(\v{x})\ - {\mathbf{s}_\theta}(\v{x})\|^2}
+\end{equation}
+which is referred as the *Fisher divergence*, or as the explicit score matching (ESM) loss.
+
+### Implicit
+
