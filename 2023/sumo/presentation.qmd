@@ -197,12 +197,16 @@ The explicit objective can be written *without* requiring the true score
 
 - Langevin dynamics has slow mixing rates
 
-
 ## Multiple noise levels
 
-<!-- ![](figures/multinoise.jpeg) -->
+![Gaussian noise to perturb the data distribution](figures/multi_scale.jpeg)
 
 @song2019generative suggest to perturb data points such that they populate low data density regimes.
+
+## Markov chain
+
+![](figures/multinoise.jpeg)
+
 
 ::: {.fragment}
 Consider a Markov chain
@@ -248,9 +252,9 @@ p_K \approx p_{ref} = \c{N}(0, \m{I}).
 $$
 
 
----
+## Backward transition
 
-For sampling we need the *reverse* kernel $p_{k|k+1}$, given through Bayes' rule
+1. For sampling we need the *reverse* kernel $p_{k|k+1}$, given through Bayes' rule
 $$
 p_{k|k+1}(\v{x}_{k} | \v{x}_{k+1}) =  \frac{p_{k+1|k}(\v{x}_{k+1}|\v{x}_k)p_k(\v{x}_k)}{p_{k+1}(\v{x}_{k+1})}
 $$
@@ -258,48 +262,145 @@ which is unfortunately intractable!
 
 . . .
 
-Using a Taylor approximation one can show
+2. Using a Taylor approximation one can show
 $$
-p_{k|k+1}(\v{x}_{k} | \v{x}_{k+1}) \approx \c{N}\Big(\v{x}_k | (2 - \alpha) \v{x}_{k+1} + (1-\alpha^2) \nabla \log p_{k+1}(\v{x}_{k+1}), (1-\alpha^2)\m{I}\Big)
+p_{k|k+1}(\v{x}_{k} | \v{x}_{k+1}) \approx \c{N}\Big(\v{x}_k | (2 - \alpha) \v{x}_{k+1} + (1-\alpha^2) 
+\colorbox{orange}{$\nabla \log p_{k+1}(\v{x}_{k+1})$},
+(1-\alpha^2)\m{I}\Big)
 $$
 
+. . .
 
-- Approximate score with neural network
 
-- Generate samples using backward process
+3. Approximate <span style="background: orange; padding: 0px 3px;">score</span> with neural net $s_{\theta}(\v{x}_{k+1}, k+1) \approx \nabla \log p_{k+1}(\v{x}_{k+1})$.
+
+. . .
+
+4. Sampling start with $\v{x}_K \sim p_{ref}(\v{x}_K)$ and then uses the reverse kernel
+$$
+\v{x}_k = (2 - \alpha) \v{x}_{k+1} + (1-\alpha^2) s_{\theta}(\v{x}_{k+1}, k+1) + (1-\alpha^2)\v{\epsilon}
+\qquad \v{\epsilon} \sim \c{N}(\v{0},\m{I}).
+$$
 
 
 ## Score
 
-Score is again *unavailable*, but using
+The score $\nabla \log p_k(\v{x}_k)$ is *required* but analytically *unavailable*. However, using
 
 $$
-p_{k+1}(\v{x}_{k+1}) = \int p(\v{x}_0) p_{k+1|0}(\v{x}_{k+1} | \v{x}_0) \d \v{x}_{0}
+p_{k}(\v{x}_{k}) = \int p(\v{x}_0) p_{k|0}(\v{x}_{k} | \v{x}_0) \d \v{x}_{0}
 $$
 
-- Conditional expectation -> Regression problem
+it follows
 
-and Tweedie's formula [@efron2011tweedie] one can show that
 $$
-\nabla \log p_{k+1}(\v{x}_{k+1}) = \textrm{argmin}_{\theta} \Big[\mathbb{E}_{\v{x}_0,\v{x}_{k+1}} \| s_{\theta}(\v{x}_{k+1}) - \log p_{k+1|0}(\v{x}_{k+1}|\v{x}_0)\|^2\Big]
+\nabla \log p_{k}(\v{x}_{k}) = \mathbb{E}_{\v{x}_0 \sim  p(\cdot | \v{x}_k)}\Big[ \nabla \log p_{k|0}(\v{x}_k | \v{x}_0) | \v{x}_k \Big]
+$$
+
+A conditional expectation can be written as a regression problem (by definition), which gives
+$$
+\nabla \log p_{k}(\v{x}_{k}) = \textrm{argmin}_{\theta} \Big[\mathbb{E}_{\v{x}_0,\v{x}_{k}} \| s_{\theta}(\v{x}_{k}) - \nabla_{\v{x}_k}\log p_{k|0}(\v{x}_{k}|\v{x}_0)\|^2\Big]
 $$
 <!-- = \mathbb{E}_{\v{x}|\v{x}_{k+1}}[\nabla \log p_{k+1|0}(\v{x}_{k+1}|\v{x}_k)] -->
 
-## TODO: Example
+## Annealed Langevin Dynamics
 
-## Perturbing data with an SDE
+- $\approx$ Noise Conditional Score Network (NCSN) by @song2019generative
+- $\approx$ Denoising Diffusion Probabilistic Models (DDPM) by @ho2020denoising
+
+::: {.columns}
+::: {.column}
+<div style="display:flex; justify-content:center; align-items:center;">
+![Celeb A](figures/celeba_large.gif)
+</div>
+:::
+::: {.column}
+<div style="display:flex; justify-content:center; align-items:center;">
+![CIFAR-10](figures/cifar10_large.gif)
+</div>
+:::
+:::
+
+
+
+
+## Perturbing data with an SDE in continuous time
+
+From a (large) discrete set of noise scales $\rightarrow$ continuous number.
+
+<div style="display:flex; justify-content:center; align-items:center;">
+![Forward SDE runs](figures/perturb_vp.gif){fig-align="center"}
+</div>
+
+. . .
+
+The SDE can be written as
+$$
+\d \v{x}_t = f(\v{x}_t, t) \d t + g(t) \d \m{W}_t,\qquad \v{x}_0 \sim p_{data}
+$$
+where $f$ and $g$ are the drift and diffusion terms, and $\m{W}_t$ is standard Brownian motion. Heuristically, you can think of it as "$\d \m{W}/\d t \sim \c{N}(0, \d t)$".
+
+<!-- ::: {#exm-ou-process}
+### Ornstein–Uhlenbeck process
+$$
+\d \v{x}_t = - \v{x}_t \d t + \sqrt{2} \d \m{W}_t
+$$
+::: -->
+
+
+## Reversing the SDE for sample generation
+
+
+
+<div style="display:flex; justify-content:center; align-items:center;">
+![Generating data following the reverse SDE](figures/denoise_vp.gif){fig-align="center"}
+</div>
+
+#### Reverse process
+$$
+\d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \nabla_\v{x} \log p_t(\v{x})\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim p_T
+$$
+where $\d t$ represents a *negative* infinitesimal time step as $t=T \rightarrow 0$.
+
+---
+
+## Generative modelling approximating the reverse process
+
+#### Exact reverse process
+$$
+\d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$\nabla_\v{x} \log p_t(\v{x})$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_T$}
+$$
+
+#### Generative model
+$$
+\d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$s_{\theta^*}(\v{x}_t, t)$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_{ref}$}
+$$
+
+The score is learned using score-matching, similar to before
 
 $$
-\d \v{x}_t = f(\v{x}_t, t) \d t + g(t) \d \m{W}_t
+\theta^* = \textrm{argmin}_{\theta} \Big[\mathbb{E}_{\v{x}_0,\v{x}_{t}} \| s_{\theta}(\v{x}_{t}, t) - \nabla_{\v{x}_t}\log p_{t|0}(\v{x}_{t}|\v{x}_0)\|^2\Big]
 $$
-where $\m{W}_t$ is standard Brownian motion. Think of "$\d \m{W}/\d t \sim \c{N}(0, \d t)$".
 
-![caption](figures/forward_sde.gif)
+For OU processes $p_{t|0}(\v{x}_{t}|\v{x}_0)$ can analytically be computed using the Fokker-Planck equations and leads to simple expression of the form
+$$
+p_{t|0}(\v{x}_{t}|\v{x}_0) = \c{N}\big(\v{x}_t; \textrm{e}^{-t} \v{x}_0, (1-\textrm{e}^{-2t}) \m{I}\big)
+$$
 
 
-## Reverse
+## Continuous-time denoising --- @song2021Scorebased
 
-![caption](figures/reverse_sde.gif)
+![Forward-Reverse](figures/teaser.jpeg)
+
+. . .
+
+- Continuous-time formulation generalizes the discrete approaches.
+
+. . .
+
+- Log-likelihood computations $\log p_\theta(\v{x}_0)$ (not shown here).
+
+
 
 
 ---
