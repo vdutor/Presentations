@@ -299,7 +299,7 @@ $$
 
 A conditional expectation can be written as a regression problem (by definition), which gives
 $$
-\nabla \log p_{k}(\v{x}_{k}) = \textrm{argmin}_{\theta} \Big[\mathbb{E}_{\v{x}_0,\v{x}_{k}} \| s_{\theta}(\v{x}_{k}) - \nabla_{\v{x}_k}\log p_{k|0}(\v{x}_{k}|\v{x}_0)\|^2\Big]
+\nabla \log p_{k}(\v{x}_{k}) = \textrm{argmin}_{\theta}\,\mathbb{E}_{\v{x}_0,\v{x}_{k}} \Big[ \| s_{\theta}(\v{x}_{k}) - \nabla_{\v{x}_k}\log p_{k|0}(\v{x}_{k}|\v{x}_0)\|^2\Big]
 $$
 <!-- = \mathbb{E}_{\v{x}|\v{x}_{k+1}}[\nabla \log p_{k+1|0}(\v{x}_{k+1}|\v{x}_k)] -->
 
@@ -408,14 +408,92 @@ $$
 ::: {.r-fit-text}
 Part 2:
 
-Diffusion Models for Stochastic Processes
+Neural Diffusion Processes
 :::
+
+. . .
+
+Work with:
+
+- Alan Saul
+- Fergus Simpson
+- Zoubin Ghaharamni
 
 ## Motivation
 
-- Diffusion models have been used on different data modalities (molecules)
+- Diffusion models have been used on different data modalities:
 
-- Can we train a diffusion model to capture a distribution over functions?
+
+::: {.r-stack}
+![](figures/multinoise.jpeg){.fragment height="300"}
+
+![](figures/molecules.png){.fragment height="300"}
+
+![](figures/audio.png){.fragment height="300"}
+
+:::
+
+## Diffusion models for 'functions'
+
+![Distribution over functions](figures/functions.png)
+
+
+## Perturbing function-values using OU process
+
+Let $\m{X} \in \R^{n \times d}$ and $\v{y}(\v{X}) \in \R^N$, we define the forward noising process as
+$$
+\d \v{y}_t(\m{X}) = -\frac{1}{2} \beta_t \v{y}_t(\m{X}) \d t + \sqrt{\beta_t} \d \m{W}_t
+$$
+
+Our random variable $\{\v{y}_t\}_{t=0}^T$ is now a **function** which depends on inputs $\m{X}$.
+
+
+## Forward process
+
+![Forward NDP process](figures/forward_ndp.png)
+
+## Reverse process
+
+![Reverse NDP process](figures/reverse_sde_ndp.png)
+
+
+## Learning the score
+
+$$
+\theta^* = \textrm{argmin}_{\theta}\,\mathbb{E}_{\v{y}_0,\v{y}_{t}} \Big[
+     \| s_{\theta}(\v{y}_{t}, \m{X}, t) - \nabla_{\v{y}_t}\log p_{t|0}(\v{y}_{t}|\v{y}_0)\|^2
+\Big]
+$$
+
+- Encode properties of stochastic processes (see paper)
+
+
+## Conditional sampling
+
+![Conditional sampling](figures/conditioning2.png)
+
+## Experiment 1: Image Regression
+
+Learning complex covariances from *data*.
+
+::: {.r-stack}
+![](figures/image_as_function_illustration_celeba_3.png){.fragment height="300"}
+
+![](figures/image_regression.png){.fragment height="300"}
+:::
+
+## Experiment 2: 
+
+Capturing *non-Gaussian* posteriors
+
+::: {.r-stack}
+![](figures/step_prior.png){.fragment height="300"}
+
+![](figures/step_ndp.png){.fragment height="300"}
+
+![](figures/step_gp.png){.fragment height="300"}
+:::
+
 
 ## References
 
