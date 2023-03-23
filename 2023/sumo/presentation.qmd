@@ -486,7 +486,7 @@ Arxiv [-@dutordoir2022neural]
 
 ## Perturbing function-values using OU process
 
-Let $\m{X} \in \R^{n \times d}$ and $\v{y}(\v{X}) \in \R^N$, we define the forward noising process as
+Let $\m{X} \in \R^{n \times d}$ and $\v{y}(\v{X}) \in \R^n$, we define the forward noising process as
 $$
 \d \v{y}_t(\m{X}) = -\frac{1}{2} \v{y}_t(\m{X}) \d t + \d \m{W}_t
 $$
