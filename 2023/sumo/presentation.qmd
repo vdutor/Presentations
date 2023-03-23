@@ -113,27 +113,6 @@ We can fit this energy function by maximising the log likelihood:
 
 ️⚠️️ Intractable normalizing constant: $Z_\theta = \int_{\R^d} \textrm{e}^{-U_\theta(\v{x})}\d \v{x}$.
 
-
-## Langevin dynamics
-The density of $\v{x}_t$ as $t\rightarrow\infty$ for the SDE
-$$
-\d \v{x}_t = \nabla \log p(\v{x}_t) \d t + \sqrt{2} \d \v{W}_t
-$$
-is given by $p(\v{x})$, where $\v{W}_t$ is standard Brownian motion.
-
-. . .
-
-#### Euler-Marayuma
-First-order discretization of continuous SDE. For a small stepsize $\gamma$ we can
-$$
-\v{x}_{k+1} = \v{x}_k + \gamma \nabla \log p(\v{x}_k) + \sqrt{2}\v{z}_k,\quad \v{z}_k \sim \c{N}(0,\gamma \m{I})
-$$
-
-
----
-
-![Using Langevin dynamics to sample from a mixture of two Gaussians. (from: Yang Song)](figures/langevin.gif)
-
 ## Score function
 
 Modelling the density through the score function
@@ -145,14 +124,75 @@ $$
 
 . . .
 
-The score of a density is independent of the normalizing constant.
-Assume $p(x) = q(x) / Z$
+The score does *not* depend on the normalizing constant.
+Let $p(x) = \frac{q(x)}{Z}$
+
+::: {.r-stack}
+::: {.fragment .fade-in-then-out}
 $$
-\nabla_x \log \frac{q(x)}{Z}  = \nabla_x \log q(x) - \nabla_x \log Z
+\nabla_x \log \frac{q(x)}{Z}  = \nabla_x \log q(x) - \colorbox{white}{$\nabla_x \log Z$}
+$$
+:::
+
+::: {.fragment}
+$$
+\nabla_x \log \frac{q(x)}{Z}  = \nabla_x \log q(x) - \underbrace{\colorbox{orange}{$\nabla_x \log Z$}}_{= 0}
+$$
+:::
+
+:::
+
+. . .
+
+::: {.columns}
+::: {.column}
+<div style="display:flex; justify-content:center; align-items:center;">
+![$p(x)$](figures/ebm.gif)
+</div>
+:::
+::: {.column}
+<div style="display:flex; justify-content:center; align-items:center;">
+![$\nabla_x \log p(x)$](figures/score.gif)
+</div>
+:::
+:::
+
+## Langevin dynamics
+
+::: {#thm-langevin}
+The density of $\v{x}_t$ as $t\rightarrow\infty$ for the SDE
+$$
+\d \v{x}_t = \nabla \log p(\v{x}_t) \d t + \sqrt{2} \d \v{W}_t
+$$
+is given by $p(\v{x})$, where $\v{W}_t$ is standard Brownian motion.
+:::
+
+. . .
+
+#### Euler-Marayuma
+First-order discretization of continuous SDE. For a small stepsize $\gamma$ we can
+$$
+\v{x}_{k+1} = \v{x}_k + \gamma \nabla \log p(\v{x}_k) + \sqrt{2}\v{z}_k,\quad \v{z}_k \sim \c{N}(0,\gamma \m{I})
 $$
 
+## Fisher divergence
 
+We can train score-based models by minimizing the Fisher divergence between the model and the data distributions
 
+$$
+    \E_{p(\v{x})}\Big[{\|\nabla_{\v{x}} \log p(\v{x})\ - {\mathbf{s}_\theta}(\v{x})\|^2}\Big].
+$$
+
+. . .
+
+::: {.incremental}
+- Infeasible because it requires access to the unknown data score.
+- Score-matching: @hyvarinen2005, @vincent2011connection, @song2019Sliced
+:::
+
+---
+
+![Using Langevin dynamics to sample from a mixture of two Gaussians. (from: Yang Song)](figures/langevin.gif)
 
 
 :::{.hidden}
@@ -183,9 +223,15 @@ The explicit objective can be written *without* requiring the true score
 
 ## Naive score-based generative modeling
 
+$$
+$$
+
 ![Score-based generative modeling with score matching + Langevin dynamics. (from: Yang Song)](figures/smld.jpeg)
 
 ## Pitfalls
+
+$$
+$$
 
 ![](figures/pitfalls.jpeg)
 
@@ -297,6 +343,8 @@ $$
 \nabla \log p_{k}(\v{x}_{k}) = \mathbb{E}_{\v{x}_0 \sim  p(\cdot | \v{x}_k)}\Big[ \nabla \log p_{k|0}(\v{x}_k | \v{x}_0) | \v{x}_k \Big]
 $$
 
+. . .
+
 A conditional expectation can be written as a regression problem (by definition), which gives
 $$
 \nabla \log p_{k}(\v{x}_{k}) = \textrm{argmin}_{\theta}\,\mathbb{E}_{\v{x}_0,\v{x}_{k}} \Big[ \| s_{\theta}(\v{x}_{k}) - \nabla_{\v{x}_k}\log p_{k|0}(\v{x}_{k}|\v{x}_0)\|^2\Big]
@@ -356,7 +404,7 @@ $$
 ![Generating data following the reverse SDE](figures/denoise_vp.gif){fig-align="center"}
 </div>
 
-#### Reverse process
+#### Reverse process (Nelson's duality)
 $$
 \d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \nabla_\v{x} \log p_t(\v{x})\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim p_T
 $$
@@ -364,23 +412,29 @@ where $\d t$ represents a *negative* infinitesimal time step as $t=T \rightarrow
 
 ---
 
-## Generative modelling approximating the reverse process
+## Generative modelling by approximating the reverse process
 
 #### Exact reverse process
 $$
 \d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$\nabla_\v{x} \log p_t(\v{x})$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_T$}
 $$
 
+. . .
+
 #### Generative model
 $$
 \d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$s_{\theta^*}(\v{x}_t, t)$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_{ref}$}
 $$
+
+. . .
 
 The score is learned using score-matching, similar to before
 
 $$
 \theta^* = \textrm{argmin}_{\theta} \Big[\mathbb{E}_{\v{x}_0,\v{x}_{t}} \| s_{\theta}(\v{x}_{t}, t) - \nabla_{\v{x}_t}\log p_{t|0}(\v{x}_{t}|\v{x}_0)\|^2\Big]
 $$
+
+. . .
 
 For OU processes $p_{t|0}(\v{x}_{t}|\v{x}_0)$ can analytically be computed using the Fokker-Planck equations and leads to simple expression of the form
 $$
@@ -402,22 +456,14 @@ $$
 
 
 
-
----
-
-::: {.r-fit-text}
-Part 2:
-
-Neural Diffusion Processes
-:::
+# Neural Diffusion Processes 
 
 . . .
 
-Work with:
+VD, Alan Saul, Zoubin Ghahramani and Fergus Simpson,
+Arxiv [-@dutordoir2022neural]
 
-- Alan Saul
-- Fergus Simpson
-- Zoubin Ghaharamni
+
 
 ## Motivation
 
@@ -442,10 +488,17 @@ Work with:
 
 Let $\m{X} \in \R^{n \times d}$ and $\v{y}(\v{X}) \in \R^N$, we define the forward noising process as
 $$
-\d \v{y}_t(\m{X}) = -\frac{1}{2} \beta_t \v{y}_t(\m{X}) \d t + \sqrt{\beta_t} \d \m{W}_t
+\d \v{y}_t(\m{X}) = -\frac{1}{2} \v{y}_t(\m{X}) \d t + \d \m{W}_t
 $$
 
 Our random variable $\{\v{y}_t\}_{t=0}^T$ is now a **function** which depends on inputs $\m{X}$.
+
+. . .
+
+Using Fokker-Planck, we can compute the marginal density in closed-form for for this process
+$$
+p_{t|0}(\v{y}_t(\m{X}) | \v{y}_0(\m{X})) = \c{N}\Big(\textrm{e}^{-\frac{1}{2} \v{y}_0(\m{X})}, (1 - \textrm{e}^{-t}) \m{I} \Big) 
+$$
 
 
 ## Forward process
@@ -454,46 +507,105 @@ Our random variable $\{\v{y}_t\}_{t=0}^T$ is now a **function** which depends on
 
 ## Reverse process
 
-![Reverse NDP process](figures/reverse_sde_ndp.png)
+::: {.r-stack}
+::: {.fragment .fade-in-then-out style="float: left!important; margin-left:0px; margin-top:0px;"}
+
+ Exact reverse process
+$$
+\d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$\nabla_\v{x} \log p_t(\v{x})$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_T$}
+$$
+
+:::
+
+::: {.fragment .fade-in style="float: left!important; margin-left:0px; margin-top:0px;"}
+
+Generative model
+$$
+\d \v{x}_t = \big[f(\v{x}_t, t) - g^2(t) \colorbox{orange}{$s_{\theta^*}(\v{x}_t, t)$}\big] \d t + g(t) \d \bar{\m{W}}_t,\quad \v{x}_T \sim \colorbox{lightgray}{$p_{ref}$}
+$$
+:::
+:::
+
+::: {.fragment}
+
+<div style="display:flex; justify-content:center; align-items:center;">
+<img src="figures/reverse_sde_ndp.png" width="600">
+</div>
+
+<!-- ![Reverse NDP process](figures/reverse_sde_ndp.png){height="100"} -->
+
+:::
 
 
 ## Learning the score
 
+The minima of the Fisher divergence can be shown to be equivalent to
 $$
 \theta^* = \textrm{argmin}_{\theta}\,\mathbb{E}_{\v{y}_0,\v{y}_{t}} \Big[
      \| s_{\theta}(\v{y}_{t}, \m{X}, t) - \nabla_{\v{y}_t}\log p_{t|0}(\v{y}_{t}|\v{y}_0)\|^2
 \Big]
 $$
 
-- Encode properties of stochastic processes (see paper)
+. . .
+
+![Score network architecture](figures/architecture.png)
+
+Encode properties of stochastic processes in score network $s_\theta$:
+
+- dimensionality invariance
+- exchangeability
 
 
-## Conditional sampling
+## Predictions
 
-![Conditional sampling](figures/conditioning2.png)
+We use an algorithm similar to the one used for image inpainting by @lugmayr2022RePaint. 
 
-## Experiment 1: Image Regression
+This allows us to *condition* samples on observed data:
+
+. . .
+
+![Neural Diffusion Process](figures/conditioning2.png)
+
+. . .
+
+![Gaussian Processes](figures/conditioning_gp.png)
+
+
+## Experiment: Capturing *non-Gaussian* posteriors
+
+Consider the following distribution over functions. Let $a \sim \c{U}[-1, 1]$ then
+$$
+f(x) = 0.0 \text{ if } x < a\text{, else } 1.0
+$$
+
+::: {.r-stack}
+![](figures/step_prior.png){.fragment .fade-in-then-out}
+
+![](figures/step_gp.png){.fragment .fade-in-then-out}
+
+![](figures/step_ndp.png){.fragment .fade-in-then-out}
+
+:::
+
+
+## Experiment: Image Regression
 
 Learning complex covariances from *data*.
 
 ::: {.r-stack}
-![](figures/image_as_function_illustration_celeba_3.png){.fragment height="300"}
+![](figures/celeb_face.png){.fragment .fade-up}
 
-![](figures/image_regression.png){.fragment height="300"}
+![](figures/image_as_function_illustration_celeba_3.png){.fragment .fade-in-then-out}
+
 :::
 
-## Experiment 2: 
+---
 
-Capturing *non-Gaussian* posteriors
+<div style="display:flex; justify-content:center; align-items:center;">
+![](figures/celeb_ndp.png)
+</div>
 
-::: {.r-stack}
-![](figures/step_prior.png){.fragment height="300"}
-
-![](figures/step_ndp.png){.fragment height="300"}
-
-![](figures/step_gp.png){.fragment height="300"}
-:::
-
+# Thank you for your attention.
 
 ## References
 
