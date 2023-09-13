@@ -1,0 +1,280 @@
+
+
+\section{Likelihood evaluation and connection with continuous normalising flows}
+
+% \begin{frame}{Probability flow}
+\begin{frame}{Fokker-Planck equation}
+%
+% \vspace{-0.5em}
+%
+Given the SDE $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\Sigma^{1/2}(t, \fwd_t)} \rmd \bfB_t$, the
+% \begin{equation}
+% \label{eq:}
+% \end{equation}
+\textbf{Fokker-Planck} equation describes the evolution of the density
+\begin{equation}
+\label{eq:fokker_planck}
+\frac{\partial}{\partial t} p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot) \right)(x) + \frac{1}{2} \sum_{i,j} \frac{\partial^2}{\partial_i\partial_j} \left( \hlred{\Sigma_{i,j}(t, \cdot)} p_t(\cdot) \right)(x).
+\end{equation}
+\pause
+\vspace{-\topsep}
+\begin{itemize}
+    \setbeamertemplate{itemize items}[triangle]
+    \item If $\hlred{\Sigma = 0}$ (deterministic dynamics): 
+\end{itemize}
+\begin{equation*}
+    \frac{\partial}{\partial t} p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot)  \right) (x).
+\end{equation*}
+\pause
+\vspace{-\topsep}
+\begin{itemize} \setbeamertemplate{itemize items}[triangle]
+    \item If $\hlred{\Sigma = \sigma^2(t) \m{I}}$ (Langevin dynamics):
+\end{itemize}
+\vspace{-0.5em}
+\begin{align*}
+\label{eq:fokker_planck_isotropic}
+\frac{\partial}{\partial t} p_t(x) 
+&= -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot)  \right)(x)  + \tfrac{1}{2} \hlred{\sigma(t)}^2 \Delta p_t (x) \\
+&= -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(x)  \right).
+\end{align*}
+%
+\end{frame}
+
+\begin{frame}{Fokker-Planck equation (Cont'd)}
+% Since we can express the evolution of the density of the SDE 
+% % $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\Sigma^{1/2}(t, \fwd_t)} \rmd \bfB_t$ 
+% $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$ 
+% in the same fashion as for the deterministic dynamics
+% \begin{equation*}
+%     \frac{\partial}{\partial t} p_t(x) = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2}\hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(\cdot) \right) (x).
+% \end{equation*}
+% \pause
+Then both of the following dynamics
+\begin{enumerate}
+    \item $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$ (stochastic).
+    \item $\rmd \fwd_t = \left[ \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \right] \rmd t$ (deterministic).
+\end{enumerate}
+have the same marginal density $\Pbb_t\triangleq\c{L}(\fwd_t)$ which evolution is given by
+\begin{equation*}
+    \frac{\partial}{\partial t} p_t(x) = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2}\hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(\cdot) \right) (x).
+\end{equation*}
+This gives us a \textit{deterministic} ODE with the same marginal density as the SDE.
+% probability density as the SDE.
+%
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{images/sde.png}
+\end{center}
+%
+\end{frame}
+
+% \begin{frame}{Log-likelihood evolution of ODEs}
+% %
+% \vspace{-0.5em}
+% %
+% Assume \textbf{deterministic} evolution of $\fwd_t$ given by the ODE
+% \begin{equation}
+%     \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t.
+% \end{equation}
+% %
+% The associated \textbf{Fokker-Planck} equation is
+% \begin{equation}
+%   \frac{\partial}{\partial t} p_t(\fwd_t) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot) \right) (\fwd_t).
+% \end{equation}
+% \pause
+% %
+% The evolution of the log-density is
+% \begin{equation}
+%   \frac{\partial}{\partial t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x) - \langle \hlblue{b(t, \cdot)}, \nabla \log p_t(x) \rangle.
+% \end{equation}
+% \pause
+% %
+% Combining the two dynamics
+% \begin{equation}
+%   \frac{\rmd}{\rmd t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x).
+% \end{equation}
+% % \begin{align}
+% %     \frac{\rmd}{\rmd t} p_t(\fwd_t) 
+% %     &= \frac{\partial}{\partial t} p_t(\fwd_t) + \langle \frac{\partial}{\partial x} p_t(\fwd_t), \frac{\partial}{\partial t} \fwd_t \rangle \\
+% %     &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) (\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %      &= -p_t(\fwd_t) ~\dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t) - \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %       \frac{\rmd}{\rmd t} \log p_t(\fwd_t) &= \dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t).
+% % \end{align}
+% %
+% The \textbf{log-likelihood} can be computed as
+% \begin{equation}
+%     \log p_0(\fwd_0) = \log p_T(\fwd_T) + \int_0^T  \dive \left( \hlblue{b(t, \cdot)} \right)(\fwd_t) \rmd t.
+% \end{equation}
+
+% \end{frame}
+
+\begin{frame}{Log-likelihood evolution of ODEs}
+%
+\vspace{-0.5em}
+%
+Assume a \textbf{deterministic} evolution of $\fwd_t$ given by the ODE
+\begin{equation}
+    \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t.
+\end{equation}
+%
+The evolution of the log-density is given by \cite{chen2018neural}
+\begin{equation}
+  \frac{\rmd}{\rmd t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x).
+\end{equation}
+\pause
+% \begin{align}
+%     \frac{\rmd}{\rmd t} p_t(\fwd_t) 
+%     &= \frac{\partial}{\partial t} p_t(\fwd_t) + \langle \frac{\partial}{\partial x} p_t(\fwd_t), \frac{\partial}{\partial t} \fwd_t \rangle \\
+%     &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) (\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+%      &= -p_t(\fwd_t) ~\dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t) - \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+%       \frac{\rmd}{\rmd t} \log p_t(\fwd_t) &= \dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t).
+% \end{align}
+%
+Assuming that $\fwd_T \sim p_T$, the \textbf{log-likelihood} can be computed as
+\begin{equation}
+    \log p_0(\fwd_0) = \log p_T(\fwd_T) + \int_0^T  \dive \left( \hlblue{b(t, \cdot)} \right)(\fwd_t) \rmd t.
+\end{equation}
+\end{frame}
+
+\begin{frame}{Log-likelihood evaluation of ODEs}
+% We can't solve this log-likelihood computation exactly, instead we need to solve the \textbf{augmented ODE}
+The following \textbf{augmented ODE} allows to solve at once the trajectory of $\fwd_t$ and the change in log-likelihood
+\begin{equation}
+    \frac{\rmd}{\rmd t} 
+    \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+    = {\begin{bmatrix} \hlblue{b_\theta(t, \cdot)} \\ -\dive\left(\hlblue{b_\theta(t, \cdot)} \right) \end{bmatrix}(\fwd_t)}.
+\end{equation}
+% Which we can do with a myriad of ODE solvers, many of which come with \textit{controllable error}!
+Which can be estimated numerically with a myriad of (adaptive) ODE solvers.
+\pause
+
+% This is exactly how \textbf{Neural ODEs} \cite{chen2018neural,grathwohl2019Scalable} are trained.
+This is exactly how \textbf{continuous normalising flows} \cite{chen2018neural,grathwohl2019Scalable} are trained.
+Maximising the likelihood ($\c{O}(Nd^2)$ or $\c{O}(Nd)$ with $\dive$ estimator)
+\begin{equation}
+    % {\scriptstyle
+    \PE \left[ \log p_0(\fwd_0) \right] = \PE [  \log p_T(\fwd_T) - \int_0^T \dive( \hlblue{b_\theta(t, \fwd_t)}) \rmd t ].
+    % }
+\end{equation}
+%
+% The 
+% vs \textbf{discrete} normalising flows with invertible map $f_\theta:\rset^d \rightarrow \rset^d$ ($\c{O}(d^3)$)
+% \begin{equation}
+% \PE \left[ \log p_0(\fwd_0) \right] = \PE \left[  \log p_T(f_\theta(\fwd_0)) - \log |\mathrm{D} f_\theta(\fwd_0)|  \right].
+% \end{equation}
+\end{frame}
+
+\begin{frame}{Probability flow \cite{song2021Scorebased}}
+%
+% We can apply this ODE method directly to our SDEs by converting to the ODE form, and plugging it in! The SDE
+We can apply this likelihood evaluation method for continuous SGMs induced by% the SDE
+\begin{equation}
+  \rmd \fwd_t = \hlblue{\hlblue{b(t, \fwd_t)}} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t
+\end{equation}
+% has the ODE
+since it has the same marginal density has the ODE
+\begin{equation*}
+    \rmd \fwd_t = \left[ \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \right] \rmd t.
+\end{equation*}
+\pause
+% So we can compute the log-likelihood exactly the same way as with the ODEs, by solving the augmented ODE
+We have the associated augmented ODE
+\begin{equation}
+    \frac{\rmd}{\rmd t} 
+    \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+    = {\begin{bmatrix} \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \\ 
+    -\dive\left(\hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)}\right) \end{bmatrix}(\fwd_t)}.
+\end{equation}
+We then just have to add on the log likelihood of the reference density, $\log p_T(\fwd_T)$.
+% \begin{equation}
+% %   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+%   \rmd \bwd_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+% \end{equation}
+% \pause
+% %
+% ${\bwd}_t$ has the same distribution as $\hat{\bwd}_t$ with \textbf{determinisitic} dynamics given by the ODE
+% \begin{equation}
+% %   \rmd \hat{\bwd}_t = \hlblue{\left[  \bwd_t + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+%   \rmd \hat{\bwd}_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+% \end{equation}
+% % since for both ${\bwd}_t$ and $\hat{\bwd}_t$ we have that
+% since they have the same density evolution:
+% \begin{align}
+%   \frac{\partial}{\partial t} \log p_t({\bwd}_t) 
+% %   &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) ({\bwd}_t) + \tfrac{\hlred{2}}{2} \Delta p_t ({\bwd}_t) \\
+% %   &= -\dive\left( \hlblue{\left[ b(t, \cdot) - \nabla \log p_t \right]} p_t \right) (\hat{\bwd}_t)
+%   &= -\dive\left( \hlblue{\left[-b(T-t, \cdot) + 2 \nabla \log p_{T-t} \right]} p_t \right) ({\bwd}_t) + \tfrac{\hlred{\sqrt{2}}^2}{2} \Delta p_t ({\bwd}_t) \\
+%   &= -\dive\left( \hlblue{\left[ -b(T-t, \cdot) + \nabla \log p_{T-t} \right]} p_t \right) (\hat{\bwd}_t)
+%   = \frac{\partial}{\partial t} \log p_t(\hat{\bwd}_t).
+% \end{align}
+% = 
+% = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{\hlred{c}}{2} \nabla \log p_t \right] p_t \right) (x)
+
+\end{frame}
+
+
+\begin{frame}{Probability flow \cite{song2021Scorebased}}
+%
+The continuous time reversal process of the forward process
+\begin{equation}
+  \rmd \fwd_t = \hlblue{\hlblue{b(t, \fwd_t)}} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t
+\end{equation}
+is given by
+\begin{equation}
+%   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+  \rmd \bwd_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+\end{equation}
+\pause
+%
+${\bwd}_t$ has the same distribution as $\hat{\bwd}_t$ with \textbf{determinisitic} dynamics given by the ODE
+\begin{equation}
+%   \rmd \hat{\bwd}_t = \hlblue{\left[  \bwd_t + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+  \rmd \hat{\bwd}_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+\end{equation}
+% since for both ${\bwd}_t$ and $\hat{\bwd}_t$ we have that
+since they have the same density evolution:
+\begin{align}
+  \frac{\partial}{\partial t} \log p_t({\bwd}_t) 
+%   &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) ({\bwd}_t) + \tfrac{\hlred{2}}{2} \Delta p_t ({\bwd}_t) \\
+%   &= -\dive\left( \hlblue{\left[ b(t, \cdot) - \nabla \log p_t \right]} p_t \right) (\hat{\bwd}_t)
+  &= -\dive\left( \hlblue{\left[-b(T-t, \cdot) + 2 \nabla \log p_{T-t} \right]} p_t \right) ({\bwd}_t) + \tfrac{\hlred{\sqrt{2}}^2}{2} \Delta p_t ({\bwd}_t) \\
+  &= -\dive\left( \hlblue{\left[ -b(T-t, \cdot) + \nabla \log p_{T-t} \right]} p_t \right) (\hat{\bwd}_t)
+  = \frac{\partial}{\partial t} \log p_t(\hat{\bwd}_t).
+\end{align}
+% = 
+% = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{\hlred{c}}{2} \nabla \log p_t \right] p_t \right) (x)
+
+\end{frame}
+
+
+% \begin{frame}{Continuous normalising flows (CNFs) ~\cite{chen2018neural,grathwohl2019Scalable}}
+% %
+% Assume \textbf{deterministic} forward evolution of $\fwd_t$ with dynamics given by the ODE
+% \begin{equation}
+%     \rmd \fwd_t = \hlblue{b_\theta(t, \fwd_t)} \rmd t
+%     \quad \text{thus a backward evolution} \quad \rmd \bwd_t = \hlblue{b_\theta(T - t, \bwd_t)} \rmd t
+% \end{equation}
+% where $\hlblue{b_\theta}: \rset_+ \times \rset^d \rightarrow \rset^d$ is a parametric family of drifts (i.e.\ vector fields). 
+% \pause
+% %
+
+% Consider the \textbf{augmented} ODE
+% \begin{equation}
+%     \frac{\rmd}{\rmd t} 
+%     \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+%     = \hlblue{\begin{bmatrix} b_\theta(t, \cdot) \\ -\dive\left(b_\theta(t, \cdot) \right) \end{bmatrix}(\fwd_t)}.
+% \end{equation}
+% \pause
+% %
+% Train drift \hlblue{b_\theta} by maximising the likelihood ($\c{O}(Nd^2)$ or $\c{O}(Nd)$ with $\dive$ estimator)
+% \begin{equation}
+%     % {\scriptstyle
+%     \PE \left[ \log p_0(\fwd_0) \right] = \PE [  \log p_T(\fwd_T) - \int_0^T \dive( \hlblue{b_\theta(s, \fwd_s)}) \rmd s ].
+%     % }
+% \end{equation}
+% %
+% % The 
+% vs \textbf{discrete} normalising flows with invertible map $f_\theta:\rset^d \rightarrow \rset^d$ ($\c{O}(d^3)$)
+% \begin{equation}
+% \PE \left[ \log p_0(\fwd_0) \right] = \PE \left[  \log p_T(f_\theta(\fwd_0)) - \log |\mathrm{D} f_\theta(\fwd_0)|  \right].
+% \end{equation}
+% \end{frame}

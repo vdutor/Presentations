@@ -1,0 +1,1103 @@
+\section{Continuous diffusion models}
+
+% \begin{frame}{Principles of Score Generative Models (SGMs)}
+\begin{frame}{Principles of continuous diffusion models}
+\begin{center}
+    \includegraphics[width=\textwidth]{images/sde.png}
+    % TODO(Vincent): add
+    % \animategraphics[autoplay,loop,width=0.85\textwidth]{10}{images/perturb_vp/perturb_vp-}{0}{99}
+    \captionof{figure}{\cite{song2021Scorebased}}
+\end{center}
+\vspace{-0.5em}
+% So far we have talked about discrete noise scales. Why? The discrete steps leave approximation inaccuracies, and tricky maths!
+% Why going to the continuous setting? 1/ shed a new light on discrete SGMs 2/ easier quantitative bounds 3/ likelihood evaluation.
+\begin{itemize} \setbeamertemplate{itemize items}[triangle]
+    % \item Idea: Use a \textit{continuous} series of noise scales!
+    \item Idea: Destruct data with \textit{continuous} series of noise.
+    \item Do this by constructing an \textbf{SDE} forward noising process $(\fwd_t)_{t \in \ccint{0,T}}$.
+    \item Have this noising converge to a \textbf{known distribution}.
+    \item \textbf{Invert} this SDE noising process to get $(\bwd_t)_{t\in[0,T]} = (\fwd_{T-t})_{t\in[0,T]}$.
+\end{itemize}
+%
+\end{frame}
+
+
+
+\begin{frame}{Continuous noising processes}
+%   \todo[inline]{introduce forward noising process}
+%
+The \textbf{Forward process} progressively perturbs the data following a SDE
+\begin{equation}
+  \label{eq:sde}
+    \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t, \fwd_t)} \rmd \bfB_t
+\end{equation}
+characterised by a drift $b$ and difffusion $\sigma$. $\rmd \bfB_t$ is Brownian
+motion (think of it conceptually as $\rmd \bfB_t / \rmd t \sim \mathcal{N}(0, \rmd t)$.
+\\
+\pause
+\vspace{0.5cm}
+\textbf{Euler–Maruyama} discretisation with time step $\Delta_T \ll 1$ yields a Markov kernel: 
+\begin{equation*}
+     p(\v{Y}_{n+1} | \v{Y}_{n}) \approx \mathcal{N}(\v{Y}_{n+1}|\v{Y}_{n} +
+     \Delta_T  \hlblue{b(t_n, \v{Y}_{n})}, { \Delta_T \hlred{\sigma^2(t_n,
+     \v{Y}_n)}} \m{I}).
+\end{equation*}
+where $t_n = n \Delta T$.
+\end{frame}
+
+%
+% \textbf{Langevin dynamics}:
+% \begin{equation}
+%   \label{eq:langevin}
+% %  \rmd \fwd_t = b(t, \fwd_t) \rmd t + \sigma(t, \fwd_t) \sigma^\top (t, \fwd_t) \rmd \bfB_t^\M = - \tfrac{1}{2}~\nabla_{\fwd_t} U(\fwd_t) \rmd t + \rmd \bfB_t^\M,
+%  \rmd \fwd_t = \hlblue{-\nabla_{\fwd_t} U(\fwd_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
+% \end{equation}
+% admits \textbf{invariant} density: $\rmd \piinv/ \rmd \textrm{Leb}(x) \propto \rme^{-U(x)}$ \parencite[Section 2.4]{durmus2016high}.
+%
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{Brownian motion}: $\hlblue{b(t, \fwd_t) = 0} \Rightarrow \rmd \fwd_t = \hlred{\sqrt{2}} \rmd \bfB_t$
+% \end{itemize}
+% % \begin{equation}
+% %   \label{eq:brownian}
+% % \rmd \fwd_t = \hlred{\sqrt{2}} \rmd \bfB_t,
+% % \end{equation}
+% admits \textbf{invariant} measure $\mathrm{P}_{\text{ref}} = \textrm{Leb}$.
+% \pause
+% \vspace{1em}
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{Ornstein-Uhlenbeck process}: $\hlblue{b(t, \fwd_t) = -\fwd_t} \Rightarrow \rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t$
+% \end{itemize}
+% % \begin{equation}
+% %   \label{eq:langevin}
+% % \rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
+% % \end{equation}
+% admits \textbf{invariant} density: $\rmd \mathrm{P}_{\text{ref}} / \rmd \textrm{Leb} = \c{N}(0, \Id)$.
+% \pause
+% %
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{Discretisation} yields Markov kernel: 
+% \end{itemize}
+% $\rmd \fwd_t = \hlblue  {b(\fwd_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t \Rightarrow p_{t+1|t}(x_{t+1}|x_{t}) = \mathcal{N}(x_{t+1}|x_{t} + \gamma  \hlblue{b(x_{t})}, {\hlred{\sqrt{2}}^2 \gamma} \Id)$.
+% %
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{Brownian motion}: $\hlblue{b(t, \fwd_t) = 0} \Rightarrow \rmd \fwd_t = \hlred{\sqrt{2}} \rmd \bfB_t$
+% \end{itemize}
+% % \begin{equation}
+% %   \label{eq:brownian}
+% % \rmd \fwd_t = \hlred{\sqrt{2}} \rmd \bfB_t,
+% % \end{equation}
+% admits \textbf{invariant} measure $\mathrm{P}_{\text{ref}} = \textrm{Leb}$.
+% \pause
+% \vspace{1em}
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{Ornstein-Uhlenbeck process}: $\hlblue{b(t, \fwd_t) = -\fwd_t} \Rightarrow \rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t$
+% \end{itemize}
+% % \begin{equation}
+% %   \label{eq:langevin}
+% % \rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
+% % \end{equation}
+% admits \textbf{invariant} density: $\rmd \mathrm{P}_{\text{ref}} / \rmd \textrm{Leb} = \c{N}(0, \Id)$.
+
+% \pause
+% \textbf{Euler–Maruyama} discretisation with time step $\gamma_t$ yields a Markov kernel: 
+% \begin{equation*}
+%      p(\v{y}_t | \v{y}_{t-1}) \approx \mathcal{N}(\v{y}_{t}|\v{y}_{t-1} + \gamma_t  \hlblue{b(t, \v{y}_{t-1})}, { \gamma_t \hlred{\sigma(t, \v{y}_t)}^2} \m{I}).
+% \end{equation*}
+
+
+
+\begin{frame}{Example: Ornstein–Uhlenbeck process on $\mathbb{R}^2$}
+
+Let the data $\fwd_0 \in \mathbb{R}^2$ be distributed according to a
+\emph{known} 2D Gaussian with a correlation coefficient $\rho \approx 1$.
+
+% We specify the drift as $b(t, \fwd_t) = - \fwd_t$ and diffusion $\sigma(t,\fwd_t) = \sqrt{t}$ to get a 
+We specify the drift to be linear and the diffusion coefficient to be constant
+\begin{equation}
+  \label{eq:example:sde}
+    \rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+\end{equation}
+
+\begin{figure}
+\centering
+% \includegraphics[width=\textwidth]{images/example_2d/forward.png}
+\includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/forward.pdf}
+\caption{Forward OU process on 2D data.}
+\end{figure}
+\pause
+\vspace{-5mm}
+% At $t=T$ we end up with a distribution approximately $\mathcal{N}(\v{0},\v{I})$.
+\end{frame}
+
+% \begin{frame}{Continuous score-based models}
+% \begin{frame}{Continuous score-based models: Taking the limit $\gamma \rightarrow 0$}
+% \begin{frame}{Taking the limit $\gamma \rightarrow 0$~\cite{song2021Scorebased}}
+
+
+
+% \begin{frame}{Discrete diffusion models as discretised continuous models~\cite{song2021Scorebased}}
+% %
+% % $p_{t+1|t}(x_{t+1}|x_{t}) = \mathcal{N}(x_{t+1}|x_{t} + \gamma  \hlblue{b(x_{t})}, {\hlred{\sqrt{2}}^2 \gamma} \Id) \Rightarrow_{\gamma \rightarrow 0} \rmd \fwd_t = \hlblue{b(\fwd_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t$.
+% %
+% These things look oddly familiar!
+
+% \begin{table}
+%     \centering
+%     \renewcommand*{\arraystretch}{1.5}
+%     \begin{tabular}{c|cc}
+%         & SMLD \cite{song2019generative}  & DDPM \cite{ho2020denoising} \\
+%         \hline
+%         $p(\v{y}_{t} | \v{y}_{t-1})$ & $\c{N}\del{\v{y}_{t-1}, \sigma_t^2 - \sigma_{t-1}^2}$ & $\c{N}\del{(1- \gamma_t) \v{y}_{t-1}, 2\gamma_t \m{I}}$ \\
+%         Cont. $\hlblue{b(t, \fwd_t)}$ & $\hlblue{0}$ & $\hlblue{-\fwd_t}$ \\
+%         Cont. $\hlred{\sigma(t, \fwd_t)}$ & $\hlred{\sqrt{\frac{\rmd\sigma^2(t)}{\rmd t}}}$ & $\hlred{\sqrt{2}}$ \\
+%         $p(\v{y}_T)$, $T$ is 'big' & $\c{N}\del{0, \int_0^T \sigma^2(t) \rmd t \m{I}}$ & $\c{N}(0, \m{I})$
+%     \end{tabular}
+% \end{table}
+% \end{frame}
+
+% \vspace{-0.3em}
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{SMLD} \cite{song2019generative,song2020improved}:
+% \end{itemize}
+% \begin{itemize}
+%     \item Kernel: $p_{t+1|t}(x_{t+1}|x_{t}) = \mathcal{N}(x_{t}, {2 \gamma})$.
+%     \item Update: $\fwd_{t+1} = \fwd_t + \sqrt{\gamma} \hlred{\sqrt{2}} \bfZ_{t+1}$ with $\bfZ_{t+1} \sim \mathcal{N}(0,\Id)$.
+%     \item SDE: \textbf{Brownian motion}: $\rmd \fwd_t = \hlred{\sqrt{2}} \rmd \bfB_t,\quad \fwd_0 \sim p_0 $.
+%     \item Conditional: $\fwd_t|\fwd_0 = \fwd_0 + \bfB_t$.
+%     % \item Invariant: $\mathrm{P}_{\text{ref}} = \text{Leb}$.
+%     \item Prior: $\piinv     = \c{N}(0, 2T \Id)$.
+%     \end{itemize}
+% \pause
+% %
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item \textbf{DDPM} \cite{sohl2015deep,ho2020denoising}:
+% \end{itemize}
+% \begin{itemize}
+%         \item kernel: $p_{t+1|t}(x_{t+1}|x_{t}) = \c{N}(x_{t+1}|(1-\gamma)x_{t},2\gamma)$.
+%         \item Update:  $\fwd_{t+1} = \fwd_{t} \gamma \hlblue{- \fwd_{t}} + \sqrt{\gamma} \hlred{\sqrt{2}} \bfZ_{t+1}$ with $\bfZ_{t+1} \sim \c{N}(0, \Id)$
+%         \item SDE: \textbf{Ornstein-Uhlenbeck} process: $\rmd \fwd_t = \hlblue{- \fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,\quad \fwd_0 \sim p_0 $.
+%         \item Conditional: $\fwd_t|\fwd_0 = e^{-t}\fwd_0 + \bfB_{1-e^{-2t}}$.
+%         % \item Invariant: $\rmd \mathrm{P}_{\text{ref}} / \rmd \text{Leb} \triangleq \piinv = \c{N}(0, \Id)$.
+%         \item Prior: $\piinv = \c{N}(0, \Id)$.
+
+%     \end{itemize}
+
+
+
+
+% \begin{frame}{Stochastic differential equations}
+\begin{frame}{Continuous score-based models: Time reversal process}
+    % \citeauthor{debortoli2021diffusion}
+\vspace{-0.2em}
+% Taking the limit $\gamma \rightarrow 0$...
+    
+% \begin{equation}\label{eq:forward_SDE}
+%   \rmd \fwd_t =\hlblue{-\fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,\quad \fwd_0 \sim p_0 ,
+% \end{equation}
+% \begin{equation}\label{eq:marginal_sde}
+%   \fwd_t|\fwd_0 = e^{-1}\fwd_0 + \bfB_{1-e^{-2t}}
+% \end{equation}
+%
+% \begin{theorem}{Time-reversal process~\cite{cattiaux2021time,haussmann1986time}}{}
+\vspace{5mm}
+\begin{theorem}{\cite{cattiaux2021time,haussmann1986time}}{}
+% Under mild conditions on $p_0$,
+The time-reversed process
+$(\bwd_t)_{t \geq 0} = (\fwd_{T-t})_{t \in \ccint{0,T}}$, 
+with forward process $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$,
+also satisfies an SDE given by
+\begin{equation*}
+\label{eq:backward_SDE}
+%   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,\quad \bwd_0 \sim p_T.
+  \rmd \bwd_t = \left[ -\hlblue{b(T-t,\bwd_t)} + \hlred{\sigma(T-t)}^2 \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right] \rmd t + \hlred{\sigma(T-t)} \rmd \bfB_t,
+\end{equation*}
+assuming $ \bwd_0$ is distributed the same as $\fwd_T$.
+\end{theorem}
+%
+\pause
+%
+Challenges:
+\vspace{-0.5em}
+\begin{enumerate}
+    \item We do not have access to $\fwd_T \Rightarrow$ Approximate as $\fwd_T \approx \fwd_\infty$!
+    \item The Stein score $\hlyellow{\nabla \log p_t}$ is intractable (requires solving Fokker-Planck...) $\Rightarrow$ learn it!
+    \item Cannot solve the SDE exactly $\Rightarrow$ discretise!
+\end{enumerate}
+%
+
+% \vspace{1.em}
+% %
+% Training the score network $\hlyellow{\mathbf{s}_\theta}: \R_+ \times \rset^d \rightarrow \rset^d$ is the same as in the discrete setting, with the (denoising) score matching loss, but with continuous time.
+% \begin{equation*}
+%     % \ell_t(\mathbf{s}) = \PE_{x_0,t,x_t}{\left[ \lambda(t) \|\mathbf{s}(x_t) - \nabla_{x_t} \log p_{t|0}(x_t|x_0)\|^2 \right]}
+%     \ell_{\mathrm{dsm}, \lambda}(\hlyellow{\mathbf{s}_\theta}) = \E_{p(t) p(\fwd_0) p(\fwd_t | \fwd_0)}{\left[ \lambda(t) \norm{\hlyellow{\mathbf{s}_\theta}(t, \fwd_t) - \nabla_{\fwd_t} \log p_{t|0}(\fwd_t|\fwd_0)}^2 \right]}.
+% \end{equation*}
+% with $p(x_0,t,x_t) = p_0(x_0) p(t) p_{t|0}(x_t|x_0)$, $p(t) =\c{U}(0, T)$.
+\end{frame}
+
+
+% Sampling with \textbf{Euler-Maruyama}
+% \begin{equation*}
+% % \bwd_{t+\gamma} = \gamma \left[\bwd_{t} + 2 \nabla \log p_{T-t}(\bwd_t) \right] + \sqrt{2 \gamma} \bfZ_{t}, \quad \bfZ_{t} \sim \c{N}(0, \Id).
+% \bwd_{t+\gamma} = \gamma \left[-b(T-t,\bwd_t) + \sigma^2(T-t) \nabla \log p_{T-t}(\bwd_t) \right] + \sqrt{\gamma} \sigma(T-t) \bfZ_{t}, \quad \bfZ_{t} \sim \c{N}(0, \Id).
+% \end{equation*}
+% \pause
+
+
+\begin{frame}{Learning the score \cite{hyvarinen2005estimation,vincent2011connection,song2021Scorebased}}
+
+\begin{itemize}
+    \item The Stein score $\hlyellow{\nabla \log p_t} =\nabla \log \int p_{data}(\fwd_0) p_{t\mid 0}(\fwd_t \mid \fwd_0) \rmd \fwd_0$ is intractable.
+    \item However, it can be shown that the score is the minimiser of regression objective
+    \begin{equation}
+        \label{eq:scoreobjective}
+    {\nabla_{\fwd_t} \log p_t(\fwd_t)} = \argmin_{\v{s} \in \mathcal{S}} \expeLigne{\|{\mathbf{s}(t, \fwd_t)} - \nabla_{\fwd_t} \log p_{t|0}(\fwd_t|\fwd_0)\|^2},
+    \end{equation}
+    where the expectation is taken over the joint $(t, \fwd_0, \fwd_t)$.
+% \begin{itemize}
+%     \item Score matching identity \cite{vincent2011connection,hyvarinen2005estimation}
+%     \begin{equation}\label{eq:scoreidentity}
+%         % \textstyle
+%         \hlyellow{\nabla_{\fwd_t} \log p_t(\fwd_t)} =
+%         \mathbb{E}_{p_{0\mid t}(\fwd_0 \mid \fwd_t)}\left[\nabla_{\fwd_t} \log p_{t\mid 0}(\fwd_t \mid \fwd_0)\right].
+%       \end{equation}
+%       where $p_{0\mid t}(\fwd_0 \mid \fwd_t)$ is the reverse and $p_{t|0}(\fwd_t|\fwd_0)$ is the forward transition density.
+
+%     \item By definition of the conditional expectaton, it follows that the score is the minimiser of
+%     \begin{equation}
+%         \label{eq:scoreobjective}
+%     {\nabla_{\fwd_t} \log p_t(\fwd_t)} = \argmin_{\v{s} \in \mathcal{S}} \expeLigne{\|{\mathbf{s}(t, \fwd_t)} - \nabla_{\fwd_t} \log p_{t|0}(\fwd_t|\fwd_0)\|^2},
+%     \end{equation}
+%     where the expectation is taken over the joint $(t, \fwd_0, \fwd_t)$.
+%     \item We parameterise the class of functions $\mathbf{s}: \ccint{0,T} \times \rset^d \to \rset^d$ by a neural network $\v{s}_\theta$.
+% \end{itemize}
+    \item We have access to the conditional forward density $p_{t\mid 0}$ in closed form for OU processes.
+    \item This readily gives a loss to train a neural network $\hlyellow{\mathbf{s}_\theta: [0, T] \times \rset^d \rightarrow \rset^d}$ parameterisation of the score
+\begin{equation}
+    \textstyle
+    \mathcal{L}(\theta)
+     = \mathbb{E} [\lambda(t) \|  \hlyellow{\mathrm{s}_\theta(t, \fwd_t)} - \nabla \log p_{t}({\fwd}_t| \fwd_0)\|^2].
+\end{equation}
+\end{itemize}
+\end{frame}
+
+
+% \begin{frame}{Score approximation}
+
+%     \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%         % \item The Stein score $\nabla \log p_t$ is hard to compute (requires solving Fokker-Planck!)
+%         \item One make use of the following denoising score matching identity
+%         \begin{equation}\label{eq:scoreidentity}
+%             \textstyle
+%             \hlyellow{\nabla_{y_t} \log p_t(y_t)} = \int_{\rset^d} \nabla \log p_{t|0}(y_t|y_0)~p_{0|t}(y_0|y_t) \rmd y_0,
+%           \end{equation}
+%           where $p_{t|0}(y_t|y_0)$ is the transition density of the forward noising process.
+%         \item It follows directly that $\hlyellow{\nabla \log p_t}$ is the minimiser of $\mathcal{L}(\mathbf{s}) = \expeLigne{\|\hlyellow{\mathbf{s}(t, \fwd_t)} - \nabla_{y_t}
+%         \log p_{t|0}(\fwd_t|\fwd_0)\|^2}$ over functions $\hlyellow{\mathbf{s}: \ccint{0,T} \times \rset^d \to \rset^d}$.
+%         \item This readily gives a loss over the finite parameters $\theta \in \Theta$ of the neural network $\hlyellow{\mathbf{s}_\theta: [0, T] \times \rset^d \rightarrow \rset^d}$:
+%     %     \begin{equation*}
+%     %         % \ell_t(\mathbf{s}) = \PE_{x_0,t,x_t}{\left[ \lambda(t) \|\mathbf{s}(x_t) - \nabla_{x_t} \log p_{t|0}(x_t|x_0)\|^2 \right]}
+%     %     \ell_{\mathrm{dsm}, \lambda}(\hlyellow{\mathbf{s}_\theta}) = \E_{p(t) p(\fwd_0) p(\fwd_t | \fwd_0)}{\left[ \lambda(t) \norm{\hlyellow{\mathbf{s}_\theta}(t, \fwd_t) - \nabla_{\fwd_t} \log p_{t|0}(\fwd_t|\fwd_0)}^2 \right]}.
+%     % \end{equation*}
+%     \begin{align}
+%             % \label{eq:loss}
+%         \textstyle
+%         \mathcal{L}(\theta; \lambda(t))
+%          = \mathbb{E} [\lambda(t) \|  \hlyellow{\mathrm{s}_\theta(t, \fwd_t)} - \nabla \log p_{t}({\fwd}_t| \fwd_0)\|^2]
+%     \end{align}
+%     where the expectation is taken over the joint $(t, \fwd_0, \fwd_t)$.
+%     \end{itemize}
+%     \end{frame}
+
+
+
+\begin{frame}{Sampling from the reverse process in practice}
+% As previously mentioned, 
+The (true) reverse process is given by
+\begin{equation*}
+  \rmd \bwd_t = \left[ -\hlblue{b(T-t,\bwd_t)} + \hlred{\sigma(T-t)}^2 \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right] \rmd t + \hlred{\sigma(T-t)} \rmd \bfB_t.
+\end{equation*}
+We make the following approximations
+\begin{enumerate}
+    \item Initialise $\bwd_0 \sim \mathcal{N}(\v{0},\v{I})$ which approximates $p(\fwd_{T})$.
+    \item Use score approximation $\hlyellow{\nabla \log p_{T-t}(\bwd_t)} = \v{s}_\theta(T - t, \bwd_t)$.
+    \item Discretise SDE using Euler–Maruyama method
+\end{enumerate}
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/reverse.pdf}
+% \caption{Reverse process}
+\end{figure}
+% \begin{equation*}
+%      % \fwd_t \approx \fwd_{t-1} + \gamma_t \hlblue{b(t, \fwd_{t-1})} + \sqrt{\gamma_t} \hlred{\sigma(t, \fwd_t)} \bfZ_t , \quad \bfZ_t \sim \c{N}(\v{0},\m{I})
+%      \hspace{-0.3cm}\bwd_{n+1} \approx \bwd_{n} + \Delta_T [\hlblue{-b(T - t_n, \bwd_{n})} +
+%      \hlred{\sigma(T - t_n)}^2  \hlyellow{\v{s}_\theta(T-t_n,\bwd_{n})} + \sqrt{\Delta_T} \hlred{\sigma(T -
+%      t_n, \bwd_n)} \bfZ_n.% , \quad \bfZ_t \sim \c{N}(\v{0},\m{I})
+% \end{equation*}
+% \pause
+% This discretisation however leads to some error in the sampling from the SDE. We can \textbf{correct} this error by running Langevin dynamics after this step targeting the distribution $\c{L}(\fwd_t)$. We run these dynamics along another time axis $s$ with the (time-reversal) SDE
+% \begin{equation*}
+%     % \rmd\fwd_t^s = -\nabla \log p(\fwd_t) \rmd s + \sqrt{2} \rmd\bfB_s
+%     \rmd\bwd_t^s = \hlyellow{\nabla \log p(\bwd_t^s)} \rmd s + \sqrt{2} \rmd\bfB_s
+% \end{equation*}
+% which can be discretised as
+% \begin{equation*}
+%     % \fwd_t^{s} \approx \fwd_t^{s-1} - \gamma_{t,s}\nabla \log p(\fwd_t^{s-1}) + \sqrt{2\gamma_{t,s}} \bfZ_t^s , \quad \bfZ_t^s \sim \c{N}(\v{0},\m{I}).
+%     \bwd_t^{s} \approx \bwd_t^{s-1} + \gamma_{t,s} \hlyellow{\nabla \log p(\bwd_t^{s-1})} + \sqrt{2\gamma_{t,s}} \bfZ_t^s , \quad \bfZ_t^s \sim \c{N}(\v{0},\m{I}).
+% \end{equation*}
+% We can anneal $\gamma_{t,s}$ to get close to $p(\fwd_t)$.
+% \begin{center}
+    % \includegraphics[width=\textwidth]{images/sde.png}
+    % TODO(Vincent): add
+    % \animategraphics[autoplay,loop,width=0.7\textwidth]{10}{images/denoise_vp/denoise_vp-}{0}{99}
+% \end{center}
+\end{frame}
+
+\begin{frame}{Improved sampling using Langevin dynamics}
+\begin{itemize}
+    \item Euler-Maruyama method introduces discretisation errors.
+    \item Song et al. 2021 suggest to use Langevin dymanics to correct each reverse step.
+\end{itemize}
+\pause
+\textbf{Langevin dynamics}:
+\begin{equation}
+  \label{eq:langevin}
+%  \rmd \fwd_t = b(t, \fwd_t) \rmd t + \sigma(t, \fwd_t) \sigma^\top (t, \fwd_t) \rmd \bfB_t^\M = - \tfrac{1}{2}~\nabla_{\fwd_t} U(\fwd_t) \rmd t + \rmd \bfB_t^\M,
+ \rmd \fwd_t = \hlblue{\nabla_{\fwd_t} \log p(\fwd_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
+\end{equation}
+As \( t \to \infty \), the dynamics converges towards the distribution $p(\cdot )$.
+\pause
+
+\textbf{Predictor-Corrector sampling}
+\vspace{-1.8cm}
+\begin{figure}
+    \centering
+    \begin{center}
+    \resizebox{.6\linewidth}{!}{
+    \begin{tikzpicture}
+    \Large
+        \draw [stealth-, line width = .05cm] (0,0) .. controls  (2,-4) and (3.,2) .. (6,0);
+        \draw [-stealth, line width = .05cm, C0, dashed] (0,0) -- (1.3,-2.3);
+        \draw [-stealth, line width = .05cm, C3, dashed] (1.3,-2.3) -- (1.3,-1.9);
+        \draw [-stealth, line width = .05cm, C3, dashed] (1.3,-1.9) -- (1.3,-1.7);
+        \draw [-stealth, line width = .05cm, C3, dashed] (1.3,-1.7) -- (1.3,-1.4);
+        \draw [-stealth, line width = .05cm, C0, dashed] (1.3,-1.45) -- (2.8,-1.35);
+        \draw [-stealth, line width = .05cm, C3, dashed] (2.8,-1.35) -- (2.4, -0.9);
+    %   \draw [-stealth, line width = .05cm, blue, dashed] (0,0) -- (1.3,-2.3);
+    %   \draw [-stealth, line width = .05cm, red, dashed] (1.3,-2.3) -- (1.3,-1.2);
+    %   \draw [-stealth, line width = .05cm, blue, dashed] (1.3,-1.2) -- (2.8,-0.7);
+    %   \draw [-stealth, line width = .05cm, red, dashed] (2.8,-0.7) -- (2.6, -0.5);
+        \node [below=0.2cm] at (6,0) {\footnotesize $p_0$};
+        \node [left=0.0cm] at (0,0) {\footnotesize $p(\bwd_0) = p_T$};
+        \node [left=0.2cm] at (1.3,-2.1) {\footnotesize $p(\bwd_\gamma^0)$};
+        \node [right=0.1cm] at (1.3,-2.) {\footnotesize $p(\bwd_\gamma^1)$};
+        \node [right=0.1cm] at (1.3,-1.65) {\footnotesize $\cdots$};
+    %   \node [below right=0.1cm] at (1.3,-1.2) {$\mathcal{L}(\fwd_\gamma^1)$};
+    %   \node [above=0.05cm] at (1.3,-1.2) {$\mathcal{L}(\fwd_\gamma^3)$};
+        \node [above=0.05cm] at (1.3,-1.35) {\footnotesize $p_{\gamma}$};
+    %   \node [right=0.2cm] at (2.8,-0.7) {$\mathcal{L}(\fwd_{2\gamma}^0)$};
+        %   \node [above left=0.1cm] at (2.6, -0.5) {$\mathcal{L}(\fwd_{2\gamma}^1)$};
+        \node [below right=0.1cm] at (2.8,-0.8) {\footnotesize $p(\bwd_{2\gamma}^0)$};
+        \node [right=0.1cm] at (2.6, -0.7) {\footnotesize $p(\bwd_{2\gamma}^1)$};
+        \node [above left=0.05cm] at (2.6, -0.9) {\footnotesize $p_{2\gamma}$};
+    \end{tikzpicture}
+    }
+    \end{center}
+\end{figure}
+\vspace{-2.cm}
+{\footnotesize Credits to Valentin De Bortoli for graphic.}
+\end{frame}
+
+
+% \begin{frame}{Predictor-Corrector sampling}
+% \vspace{-7.em}
+% \begin{center}
+% \begin{tikzpicture}
+%   \draw [stealth-, line width = .05cm] (0,0) .. controls  (2,-4) and (4,4) .. (6,0);
+%   \draw [-stealth, line width = .05cm, solidblue, dashed] (0,0) -- (1.3,-2.3);
+%   \draw [-stealth, line width = .05cm, solidred, dashed] (1.3,-2.3) -- (1.3,-1.9);
+%   \draw [-stealth, line width = .05cm, solidred, dashed] (1.3,-1.9) -- (1.3,-1.5);
+%   \draw [-stealth, line width = .05cm, solidred, dashed] (1.3,-1.5) -- (1.3,-1.2);
+%   \draw [-stealth, line width = .05cm, solidblue, dashed] (1.3,-1.2) -- (2.8,-0.7);
+%   \draw [-stealth, line width = .05cm, solidred, dashed] (2.8,-0.7) -- (2.6, -0.5);
+% %   \draw [-stealth, line width = .05cm, blue, dashed] (0,0) -- (1.3,-2.3);
+% %   \draw [-stealth, line width = .05cm, red, dashed] (1.3,-2.3) -- (1.3,-1.2);
+% %   \draw [-stealth, line width = .05cm, blue, dashed] (1.3,-1.2) -- (2.8,-0.7);
+% %   \draw [-stealth, line width = .05cm, red, dashed] (2.8,-0.7) -- (2.6, -0.5);
+%   \node [below=0.2cm] at (6,0) {$p_{\textrm{data}}$};
+%   \node [left=0.3cm] at (0,0) {$\mathcal{L}(\bwd_0) = p_T$};
+%   \node [below=0.2cm] at (1.3,-2.3) {$\mathcal{L}(\bwd_\gamma^0)$};
+%   \node [right=0.1cm] at (1.3,-1.9) {$\mathcal{L}(\bwd_\gamma^1)$};
+%   \node [right=0.1cm] at (1.3,-1.5) {$\cdots$};
+% %   \node [below right=0.1cm] at (1.3,-1.2) {$\mathcal{L}(\bwd_\gamma^1)$};
+% %   \node [above=0.05cm] at (1.3,-1.2) {$\mathcal{L}(\bwd_\gamma^3)$};
+%   \node [above=0.05cm] at (1.3,-1.2) {$p_{\gamma}$};
+% %   \node [right=0.2cm] at (2.8,-0.7) {$\mathcal{L}(\bwd_{2\gamma}^0)$};
+%     %   \node [above left=0.1cm] at (2.6, -0.5) {$\mathcal{L}(\bwd_{2\gamma}^1)$};
+%   \node [below right=0.1cm] at (2.8,-0.7) {$\mathcal{L}(\bwd_{2\gamma}^0)$};
+%   \node [right=0.1cm] at (2.6, -0.5) {$\mathcal{L}(\bwd_{2\gamma}^1)$};
+%   \node [above left=0.05cm] at (2.6, -0.5) {$p_{2\gamma}$};
+% \end{tikzpicture}
+% \end{center}
+% \vspace{-2.5em}
+% % \caption{
+%     % Illustration of the effect of the corrector step on SGM.
+%     The black line corresponds to the dynamics of the noising process 
+%   $(p_t)_{t \in \ccint{0,T}}$. The \textcolor{solidblue}{blue dashed lines} correspond to the
+%   predictor step (going backward in time) and the \textcolor{solidred}{red dashed lines} correspond to
+%   the corrector step (projecting back onto the forward dynamics).
+% %   Note that
+% %   $\mathcal{L}(X_1^\gamma) \approx p_{T- \gamma}$ and
+% %   $\mathcal{L}(X_2^\gamma) \approx p_{T- 2\gamma}$.
+% % }
+
+% \end{frame}
+  
+
+% \begin{frame}{Predictor-Corrector sampling from the backwards process}
+% %
+% \begin{algorithm}[H]
+% % \caption{\small GRW-c (Geodesic Random Walk with corrector)}
+% \caption{\small Predictor-Corrector}
+% \label{alg:grw-c}
+% \begin{algorithmic}[1]
+%  \small
+% %   \Require $T, N, \gamma = T / N, X_0, b, \sigma, \mathrm{P}$
+% %   \Require $T, N, \gamma = T / N, X_0, b, \beta_t$
+%     \Require $\bwd_0$, $T$, $N$, $S$, $\gamma = T/N$, $\gamma_{s}$
+% %   \State $\gamma = T / N$ \Comment Step-size
+%   \For{\textcolor{solidblue}{$k \in \{0, \dots, N-1\}$}}
+%   \State \textcolor{solidblue}{/// PREDICTOR STEP}
+%   \State \textcolor{solidblue}{${\bfZ}_{k+1} \sim \mathrm{N}(0, \Id)$} \Comment Standard Gaussian noise% in ambient space $\rset^p$
+% %   \State \textcolor{solidblue}{$Z_{k+1/2} = \mathrm{P}(X_k^\gamma) \bar{Z}_{k+1/2}$} \Comment Projection in the tangent space $\mathrm{T}_x \M$ 
+% %   \State \textcolor{solidblue}{$W_{k+1} = \gamma b(k \gamma, X_k) + \sqrt{\gamma} \sigma(k \gamma, X_k) Z_{k+1}$} \Comment Euler--Maruyama step %on tangent space 
+% %   \State \textcolor{solidblue}{$W_{k+1} = \gamma b(k \gamma, X_k) + \sqrt{\gamma} \sigma(k \gamma, X_k) Z_{k+1}$} \Comment Euler--Maruyama step %on tangent space 
+%   \State \textcolor{solidblue}{$\bwd_{k+1} = \bwd_{k} + \gamma \sbr{-b(T-k \gamma, \bwd_k) + \nabla \log p_{T-k\gamma}(\bwd_{k})} + \sqrt{\gamma} \bfZ_{k+1}$} \Comment E-M step %on tangent space 
+% %   \State \textcolor{solidblue}{$X_{k+1} = \exp_{X_k}[W_{k+1}]$} \Comment %Geodesic projection onto $\M$
+
+%   \State \textcolor{solidred}{/// CORRECTOR STEP}
+%   \State \textcolor{solidred}{${\bwd}_{k+1}^0 = {\bwd}_{k+1}$}
+%   \For{\textcolor{solidred}{$s \in \{0, \dots, S-1\}$}}
+%   \State \textcolor{solidred}{${\bfZ}_{k+1}^s \sim \mathrm{N}(0, \Id)$} \Comment Standard Gaussian noise% in ambient space $\rset^p$
+% %   \State \textcolor{solidred}{$Z_{k+1} = \mathrm{P}(X_{k+1/2}^\gamma) \bar{Z}_{k+1}$} \Comment Projection in the tangent space $\mathrm{T}_x \M$ 
+% %   \State \textcolor{solidred}{$W_{k+1}^{l+1} = \tfrac{\gamma}{2} b(k \gamma, X_{k}^l) + \sqrt{\gamma} \sigma(k \gamma, X_{k}^l) Z_{k+1}$} \Comment Euler--Maruyama step% on tangent space \label{line:dete}
+%   \State \textcolor{solidred}{$\bwd_{k+1}^{s+1} = \bwd_{k+1}^{s} + \gamma_s \nabla \log p_{T-k\gamma}(\bwd_{k+1}^{s}) + \sqrt{2 \gamma_s} \bfZ_{k+1}^s$} \Comment Langevin step% on tangent space \label{line:dete}
+% %   \State \textcolor{solidred}{$X_{k+1}^{l+1} = \exp_{X_{k}^l}[W_{k+1}^{l+1}]$} \Comment %Geodesic projection onto $\M$  
+%   \EndFor
+%   \State \textcolor{solidred}{${\bwd}_{k+1} = {\bwd}_{k+1}^S$}
+%   \EndFor
+%   \State {\bfseries return} $\bwd_N$
+% \end{algorithmic}
+% \end{algorithm}
+
+    
+% \end{frame}
+
+% \begin{frame}{Important 'tricks' - The SDE}
+    
+% % \todo[inline]{Also: Loss function weighting, corrector and more}
+
+% \textbf{Noise scheduling}:
+% For whatever SDE we are looking at, remap
+% \begin{itemize}
+%     \item $\hlblue{b(t, \fwd_{t})} \to \beta(t) \hlblue{b(t, \fwd_{t})}$
+%     \item $\hlred{\sigma(t)} \to \sqrt{\beta(t)} \hlred{\sigma(t)}$
+% \end{itemize}
+% Doing this is equivalent to \textit{re-scaling time} such that $t \mapsto \int_0^t \beta(s) ds$. We can set $\beta(t)$ to reduce the step size where the score norm is high.
+
+% % The aim is to have a linear convergence $\mathbb{W}(\mathcal{L}(\fwd_t), \piinv) \approx \mathbb{W}(\mathcal{L}(\fwd_t), p_0) * (1 - t)_+$ of the discrete steps from reference measure to data.
+
+% \pause
+
+% \textbf{Process truncation}: As $t \to 0$, the score blows up, i.e.\ $\|\hlyellow{\nabla \log p(x_t)}\| \rightarrow \infty$, with the manifold hypothesis~\cite{debortoli2022Convergence}, or we only have access to finite data.
+% % or since finite data gives a product of Dirac masses distribution.
+
+
+% Truncating the process so that $t \in \sbr{\epsilon, T}$ prevents this issue.
+% % This is equivalent to adding a small amount of the noise to the data, and puts density everywhere.
+% This is equivalent to smoothing the data with some small noise, effectively extending the support of the data distribution to $\rset^d$.
+% % adding a small amount of the noise to the data, and puts density everywhere.
+
+
+% % \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+% %     \item \textbf{Noise scheduling} $\beta(t)$
+% %     \begin{itemize} \setbeamertemplate{itemize items}[circle]
+% %     \item $\rmd \fwd_t = \hlblue{-\beta(t)~\fwd_t} \rmd t + \hlred{\sqrt{2 \beta(t)}} \rmd \bfB_t$.
+% %     \item `Rescale time': $t \mapsto \int_0^t \beta(s) ds$.
+% %     \item Spend more time when the score has high norm, i.e.\ when $t$ is small.
+% %     \item Aim: linear rate of convergence, i.e.\ $\mathbb{W}(\mathcal{L}(\fwd_t), \piinv) \approx \mathbb{W}(\mathcal{L}(\fwd_t), p_0) * (1 - t)$.
+% %     % \item Aim: $\mathbb{W}(\mathcal{L}(\fwd_t), \piinv)$ roughly linear with $t$ and $\approx 0$ when $t=1$.
+% %     \end{itemize} \setbeamertemplate{itemize items}[triangle]
+% %     \item Truncate processes between $[\epsilon, T]$ with $\epsilon > 0$ since $\|\nabla \log p(x_t)\| \rightarrow \infty$ as $t \rightarrow 0$ with manifold hypothesis~\cite{debortoli2022Convergence}.
+% %     \item \textbf{Loss weighting} $\lambda(t)$
+% %     \begin{itemize} \setbeamertemplate{itemize items}[circle]
+% %         \item $\lambda(t) \propto 1/ \PE{\left[\|\nabla \log p_{0|t}(x_t|x_0) \|^2\right]} \Rightarrow$ focus on small $t$~\cite{song2020improved}.
+% %         \item $\lambda(t) = 2 \beta(t) \Rightarrow$ 'likelihood weighting'~\cite{song2021maximum,huang2021variational}.
+% %     \end{itemize}
+% %     \item \textbf{Exponential moving average} of the weights $\theta$ at evaluation due to high stochasticity of the training loss.
+% % \end{itemize}
+    
+% \end{frame}
+
+
+% \begin{frame}{Important 'tricks' - Learning the score}
+% \textbf{Parametrising the score}: Learning the score naively can prove tricky. There is a principled way to parameterise the score however!
+% \begin{align*}
+%     \rmd \bwd_t = \sbr{-\hlblue{b(T-t, \bwd_t)} + \hlred{\sigma(T-t)}^2 \hlyellow{\v{s}_\theta}(T-t, \bwd_t)}\rmd t +  \hlred{\sigma(T-t)} \rmd \bfB_t
+% \end{align*}
+% We set
+% \begin{equation*}
+%     \hlyellow{\v{s}_\theta}(t, \bwd_t) = \v{h}_\theta(t, \bwd_t) / \sigma_t + {2\hlblue{b(t, \bwd_t)}}/{\hlred{\sigma(t)}^2}, \quad \sigma_t = \PE{\left[ \| \nabla \log p(\fwd_t|\fwd_0)\|^2 \right]}^{1/2}.
+% \end{equation*}
+% \vspace{-\topsep}
+% \begin{enumerate}
+%     \item This sets the dynamics of the backwards SDE to be the same as the forward if $\v{h}_\theta(t, \bwd_t) = 0$.
+%     \item This normalises $\v{h}_\theta(t, \bwd_t)$ to have expected norm of 1.
+% \end{enumerate}
+% We can show that $\PE{\left[ \| \nabla \log p(\fwd_t|\fwd_0)\|^2 \right]}^{1/2} = \text{Std}[\fwd_t|\fwd_0] = \sigma_t$.
+% % This is something we can typically compute for a known SDE.
+% %
+% % \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+% %     \item \textbf{Score network parametrisation}
+% %     \begin{itemize} \setbeamertemplate{itemize items}[circle]
+% %         \item $\rmd \bwd_t = \hlblue{\left[-b(t, \bwd_t) + 2 \beta(t) \mathbf{s}_\theta(t, \bwd_t) \right]} \rmd t + \hlred{\sqrt{2\beta(t)}} \rmd \bfB_t$.
+% %         \item $\hlyellow{\mathbf{s}_\theta}(t, y_t) = \left(h_\theta(t, y_t)/ \sigma_t + 2 * \hlblue{b(t, y_t)}/\beta(t) \right)$.
+% %         \item $\rmd \bwd_t = \hlblue{\left[b(t, \bwd_t) + 2 \beta(t) \mathbf{h}_\theta(t, \bwd_t) / \sigma_t \right]} \rmd t + \hlred{\sqrt{2\beta(t)}} \rmd \bfB_t$.
+% %         \item If $h_\theta(t, x_t)=0 \Rightarrow \rmd \bwd_t = \rmd \fwd_{t}$.
+% %         % \item $\hlyellow{\mathbf{s}_\theta}(t, x_t) = \left(h_\theta(t, x_t)/ \sigma_t + 2*\hlblue{b(t, x_t)}/\beta(t) \right)$.
+% %         \item With $\sigma_t \triangleq \PE{\left[ \| \nabla \log p(\fwd_t|\fwd_0)\|^2 \right]}^{1/2} = \text{Std}[\fwd_t|\fwd_0] = 1 - e^{-\int_0^t \beta(s) ds}$.
+% %         % \begin{itemize}
+% %             \item $1/\sigma_t\rightarrow 0$ as $t\rightarrow \infty$ and $1/\sigma_t \rightarrow \infty$ as $t \rightarrow 0$.
+% %         % \end{itemize}
+% %         % \item with $\PE{\left[ \| \nabla \log p(\fwd_t|\fwd_0)\|^2 \right]}^{1/2} = \text{Std}[\fwd_t|\fwd_0] \triangleq \sigma_t = 1 - e^{-\int_0^1 \beta(s) ds}$.
+% %         % % \item Such that if $h_\theta(t, x_t)=0$, reverse drift $\bar{b}(t, y_t) = -\beta(t) b(t, x_t) + \beta(t) * 2*b(t, x_t)/\beta(t) ={b}(t, y_t)$.
+% %         % \item If $h_\theta(t, x_t)=0$, \textbf{forward=backward} since $\hlblue{\bar{b}(t, y_t) = {b}(t, y_t)}$.
+% %         % % \item and $\hlblue{b}$ forward drift ($\hlblue{b(t, x_t)}/\beta(t)^2 = -x_t$ if $\M = \rset^d$).
+% %         % \item If $\M=\rset$ recovers more or less \cite[][e.g.]{daras2022Soft} [Not exactly as they use $\sigma^2$?].
+% %     \end{itemize}
+    
+% % \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Important 'tricks' - Learning the score}
+%     The denoising score matching loss has high variance when approximated with Monte Carlo.
+
+%     $\implies$ Using a exponential moving average of the parameters at test time is very impactful.
+% \end{frame}
+
+
+
+
+% \section{Likelihood evaluation and connection with continuous normalising flows}
+
+% \begin{frame}{Probability flow}
+% \begin{frame}{Likelihood evaluation}
+% %
+% % \vspace{-0.5em}
+% %
+% Given the SDE $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\Sigma^{1/2}(t, \fwd_t)} \rmd \bfB_t$, the
+% % \begin{equation}
+% % \label{eq:}
+% % \end{equation}
+% \textbf{Fokker-Planck} equation describes the evolution of the density
+% \begin{equation}
+% \label{eq:fokker_planck}
+% \frac{\partial}{\partial t} p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot) \right)(x) + \frac{1}{2} \sum_{i,j} \frac{\partial^2}{\partial_i\partial_j} \left( \hlred{\Sigma_{i,j}(t, \cdot)} p_t(\cdot) \right)(x).
+% \end{equation}
+% \pause
+% \vspace{-\topsep}
+% \begin{itemize}
+%     \setbeamertemplate{itemize items}[triangle]
+%     \item If $\hlred{\Sigma = 0}$ (deterministic dynamics): 
+% \end{itemize}
+% \begin{equation*}
+%     \frac{\partial}{\partial t} p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot)  \right) (x).
+% \end{equation*}
+% \pause
+% \vspace{-\topsep}
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item If $\hlred{\Sigma = \sigma^2(t) \m{I}}$ (Langevin dynamics):
+% \end{itemize}
+% \vspace{-0.5em}
+% \begin{align*}
+% \label{eq:fokker_planck_isotropic}
+% \frac{\partial}{\partial t} p_t(x) 
+% &= -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot)  \right)(x)  + \tfrac{1}{2} \hlred{\sigma(t)}^2 \Delta p_t (x) \\
+% &= -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(x)  \right).
+% \end{align*}
+% %
+% \end{frame}
+
+% \begin{frame}{Likelihood evaluation (Cont'd)}
+% % Since we can express the evolution of the density of the SDE 
+% % % $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\Sigma^{1/2}(t, \fwd_t)} \rmd \bfB_t$ 
+% % $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$ 
+% % in the same fashion as for the deterministic dynamics
+% % \begin{equation*}
+% %     \frac{\partial}{\partial t} p_t(x) = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2}\hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(\cdot) \right) (x).
+% % \end{equation*}
+% % \pause
+% Then both of the following dynamics
+% \begin{enumerate}
+%     \item $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$ (stochastic).
+%     \item $\rmd \fwd_t = \left[ \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \right] \rmd t$ (deterministic).
+% \end{enumerate}
+% have the same marginal density $\Pbb_t\triangleq\c{L}(\fwd_t)$ which evolution is given by
+% \begin{equation*}
+%     \frac{\partial}{\partial t} p_t(x) = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{1}{2}\hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\cdot)} \right] p_t(\cdot) \right) (x).
+% \end{equation*}
+% This gives us a \textit{deterministic} ODE with the same marginal density as the SDE.
+% % probability density as the SDE.
+% %
+% \begin{center}
+%     \includegraphics[width=0.8\textwidth]{images/sde.png}
+% \end{center}
+% %
+% \end{frame}
+
+% \begin{frame}{Log-likelihood evolution of ODEs}
+% %
+% \vspace{-0.5em}
+% %
+% Assume \textbf{deterministic} evolution of $\fwd_t$ given by the ODE
+% \begin{equation}
+%     \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t.
+% \end{equation}
+% %
+% The associated \textbf{Fokker-Planck} equation is
+% \begin{equation}
+%   \frac{\partial}{\partial t} p_t(\fwd_t) = -\dive\left( \hlblue{b(t, \cdot)} p_t(\cdot) \right) (\fwd_t).
+% \end{equation}
+% \pause
+% %
+% The evolution of the log-density is
+% \begin{equation}
+%   \frac{\partial}{\partial t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x) - \langle \hlblue{b(t, \cdot)}, \nabla \log p_t(x) \rangle.
+% \end{equation}
+% \pause
+% %
+% Combining the two dynamics
+% \begin{equation}
+%   \frac{\rmd}{\rmd t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x).
+% \end{equation}
+% % \begin{align}
+% %     \frac{\rmd}{\rmd t} p_t(\fwd_t) 
+% %     &= \frac{\partial}{\partial t} p_t(\fwd_t) + \langle \frac{\partial}{\partial x} p_t(\fwd_t), \frac{\partial}{\partial t} \fwd_t \rangle \\
+% %     &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) (\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %      &= -p_t(\fwd_t) ~\dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t) - \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %       \frac{\rmd}{\rmd t} \log p_t(\fwd_t) &= \dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t).
+% % \end{align}
+% %
+% The \textbf{log-likelihood} can be computed as
+% \begin{equation}
+%     \log p_0(\fwd_0) = \log p_T(\fwd_T) + \int_0^T  \dive \left( \hlblue{b(t, \cdot)} \right)(\fwd_t) \rmd t.
+% \end{equation}
+
+% \end{frame}
+
+% \begin{frame}{Log-likelihood evolution of ODEs}
+% %
+% \vspace{-0.5em}
+% %
+% Assume a \textbf{deterministic} evolution of $\fwd_t$ given by the ODE
+% \begin{equation}
+%     \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t.
+% \end{equation}
+% %
+% The evolution of the log-density is given by \cite{chen2018neural}
+% \begin{equation}
+%   \frac{\rmd}{\rmd t} \log p_t(x) = -\dive\left( \hlblue{b(t, \cdot)} \right) (x).
+% \end{equation}
+% \pause
+% % \begin{align}
+% %     \frac{\rmd}{\rmd t} p_t(\fwd_t) 
+% %     &= \frac{\partial}{\partial t} p_t(\fwd_t) + \langle \frac{\partial}{\partial x} p_t(\fwd_t), \frac{\partial}{\partial t} \fwd_t \rangle \\
+% %     &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) (\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %      &= -p_t(\fwd_t) ~\dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t) - \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) + \langle \frac{\partial}{\partial x} p_t, \hlblue{b(t, \cdot)} \rangle(\fwd_t) \\
+% %       \frac{\rmd}{\rmd t} \log p_t(\fwd_t) &= \dive\left( \hlblue{b(t, \cdot)}\right) (\fwd_t).
+% % \end{align}
+% %
+% Assuming that $\fwd_T \sim p_T$, the \textbf{log-likelihood} can be computed as
+% \begin{equation}
+%     \log p_0(\fwd_0) = \log p_T(\fwd_T) + \int_0^T  \dive \left( \hlblue{b(t, \cdot)} \right)(\fwd_t) \rmd t.
+% \end{equation}
+% \end{frame}
+
+% \begin{frame}{Log-likelihood evaluation of ODEs}
+% % We can't solve this log-likelihood computation exactly, instead we need to solve the \textbf{augmented ODE}
+% The following \textbf{augmented ODE} allows to solve at once the trajectory of $\fwd_t$ and the change in log-likelihood
+% \begin{equation}
+%     \frac{\rmd}{\rmd t} 
+%     \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+%     = {\begin{bmatrix} \hlblue{b_\theta(t, \cdot)} \\ -\dive\left(\hlblue{b_\theta(t, \cdot)} \right) \end{bmatrix}(\fwd_t)}.
+% \end{equation}
+% % Which we can do with a myriad of ODE solvers, many of which come with \textit{controllable error}!
+% Which can be estimated numerically with a myriad of (adaptive) ODE solvers.
+% \pause
+
+% % This is exactly how \textbf{Neural ODEs} \cite{chen2018neural,grathwohl2019Scalable} are trained.
+% This is exactly how \textbf{continuous normalising flows} \cite{chen2018neural,grathwohl2019Scalable} are trained.
+% Maximising the likelihood ($\c{O}(Nd^2)$ or $\c{O}(Nd)$ with $\dive$ estimator)
+% \begin{equation}
+%     % {\scriptstyle
+%     \PE \left[ \log p_0(\fwd_0) \right] = \PE [  \log p_T(\fwd_T) - \int_0^T \dive( \hlblue{b_\theta(t, \fwd_t)}) \rmd t ].
+%     % }
+% \end{equation}
+% %
+% % The 
+% % vs \textbf{discrete} normalising flows with invertible map $f_\theta:\rset^d \rightarrow \rset^d$ ($\c{O}(d^3)$)
+% % \begin{equation}
+% % \PE \left[ \log p_0(\fwd_0) \right] = \PE \left[  \log p_T(f_\theta(\fwd_0)) - \log |\mathrm{D} f_\theta(\fwd_0)|  \right].
+% % \end{equation}
+% \end{frame}
+
+% \begin{frame}{Probability flow \cite{song2021Scorebased}}
+% %
+% % We can apply this ODE method directly to our SDEs by converting to the ODE form, and plugging it in! The SDE
+% We can apply this likelihood evaluation method for continuous SGMs induced by% the SDE
+% \begin{equation}
+%   \rmd \fwd_t = \hlblue{\hlblue{b(t, \fwd_t)}} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t
+% \end{equation}
+% % has the ODE
+% since it has the same marginal density has the ODE
+% \begin{equation*}
+%     \rmd \fwd_t = \left[ \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \right] \rmd t.
+% \end{equation*}
+% \pause
+% % So we can compute the log-likelihood exactly the same way as with the ODEs, by solving the augmented ODE
+% We have the associated augmented ODE
+% \begin{equation}
+%     \frac{\rmd}{\rmd t} 
+%     \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+%     = {\begin{bmatrix} \hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)} \\ 
+%     -\dive\left(\hlblue{b(t, \fwd_t)} - \tfrac{1}{2} \hlred{\sigma(t)}^2 \hlyellow{\nabla \log p_t(\fwd_t)}\right) \end{bmatrix}(\fwd_t)}.
+% \end{equation}
+% We then just have to add on the log likelihood of the reference density, $\log p_T(\fwd_T)$.
+% % \begin{equation}
+% % %   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+% %   \rmd \bwd_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+% % \end{equation}
+% % \pause
+% % %
+% % ${\bwd}_t$ has the same distribution as $\hat{\bwd}_t$ with \textbf{determinisitic} dynamics given by the ODE
+% % \begin{equation}
+% % %   \rmd \hat{\bwd}_t = \hlblue{\left[  \bwd_t + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+% %   \rmd \hat{\bwd}_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+% % \end{equation}
+% % % since for both ${\bwd}_t$ and $\hat{\bwd}_t$ we have that
+% % since they have the same density evolution:
+% % \begin{align}
+% %   \frac{\partial}{\partial t} \log p_t({\bwd}_t) 
+% % %   &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) ({\bwd}_t) + \tfrac{\hlred{2}}{2} \Delta p_t ({\bwd}_t) \\
+% % %   &= -\dive\left( \hlblue{\left[ b(t, \cdot) - \nabla \log p_t \right]} p_t \right) (\hat{\bwd}_t)
+% %   &= -\dive\left( \hlblue{\left[-b(T-t, \cdot) + 2 \nabla \log p_{T-t} \right]} p_t \right) ({\bwd}_t) + \tfrac{\hlred{\sqrt{2}}^2}{2} \Delta p_t ({\bwd}_t) \\
+% %   &= -\dive\left( \hlblue{\left[ -b(T-t, \cdot) + \nabla \log p_{T-t} \right]} p_t \right) (\hat{\bwd}_t)
+% %   = \frac{\partial}{\partial t} \log p_t(\hat{\bwd}_t).
+% % \end{align}
+% % = 
+% % = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{\hlred{c}}{2} \nabla \log p_t \right] p_t \right) (x)
+%
+% \end{frame}
+
+
+% \begin{frame}{Probability flow \cite{song2021Scorebased}}
+% %
+% The continuous time reversal process of the forward process
+% \begin{equation}
+%   \rmd \fwd_t = \hlblue{\hlblue{b(t, \fwd_t)}} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t
+% \end{equation}
+% is given by
+% \begin{equation}
+% %   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+%   \rmd \bwd_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t.
+% \end{equation}
+% \pause
+% %
+% ${\bwd}_t$ has the same distribution as $\hat{\bwd}_t$ with \textbf{determinisitic} dynamics given by the ODE
+% \begin{equation}
+% %   \rmd \hat{\bwd}_t = \hlblue{\left[  \bwd_t + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+%   \rmd \hat{\bwd}_t = \hlblue{\left[ -\hlblue{b(T-t, \bwd_t)} + \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t
+% \end{equation}
+% % since for both ${\bwd}_t$ and $\hat{\bwd}_t$ we have that
+% since they have the same density evolution:
+% \begin{align}
+%   \frac{\partial}{\partial t} \log p_t({\bwd}_t) 
+% %   &= -\dive\left( \hlblue{b(t, \cdot)} p_t \right) ({\bwd}_t) + \tfrac{\hlred{2}}{2} \Delta p_t ({\bwd}_t) \\
+% %   &= -\dive\left( \hlblue{\left[ b(t, \cdot) - \nabla \log p_t \right]} p_t \right) (\hat{\bwd}_t)
+%   &= -\dive\left( \hlblue{\left[-b(T-t, \cdot) + 2 \nabla \log p_{T-t} \right]} p_t \right) ({\bwd}_t) + \tfrac{\hlred{\sqrt{2}}^2}{2} \Delta p_t ({\bwd}_t) \\
+%   &= -\dive\left( \hlblue{\left[ -b(T-t, \cdot) + \nabla \log p_{T-t} \right]} p_t \right) (\hat{\bwd}_t)
+%   = \frac{\partial}{\partial t} \log p_t(\hat{\bwd}_t).
+% \end{align}
+% % = 
+% % = -\dive\left( \left[ \hlblue{b(t, \cdot)} - \tfrac{\hlred{c}}{2} \nabla \log p_t \right] p_t \right) (x)
+
+% \end{frame}
+
+
+% \begin{frame}{Continuous normalising flows (CNFs) ~\cite{chen2018neural,grathwohl2019Scalable}}
+% %
+% Assume \textbf{deterministic} forward evolution of $\fwd_t$ with dynamics given by the ODE
+% \begin{equation}
+%     \rmd \fwd_t = \hlblue{b_\theta(t, \fwd_t)} \rmd t
+%     \quad \text{thus a backward evolution} \quad \rmd \bwd_t = \hlblue{b_\theta(T - t, \bwd_t)} \rmd t
+% \end{equation}
+% where $\hlblue{b_\theta}: \rset_+ \times \rset^d \rightarrow \rset^d$ is a parametric family of drifts (i.e.\ vector fields). 
+% \pause
+% %
+
+% Consider the \textbf{augmented} ODE
+% \begin{equation}
+%     \frac{\rmd}{\rmd t} 
+%     \begin{bmatrix} \fwd_t \\ \log p(\fwd_t) \end{bmatrix}
+%     = \hlblue{\begin{bmatrix} b_\theta(t, \cdot) \\ -\dive\left(b_\theta(t, \cdot) \right) \end{bmatrix}(\fwd_t)}.
+% \end{equation}
+% \pause
+% %
+% Train drift \hlblue{b_\theta} by maximising the likelihood ($\c{O}(Nd^2)$ or $\c{O}(Nd)$ with $\dive$ estimator)
+% \begin{equation}
+%     % {\scriptstyle
+%     \PE \left[ \log p_0(\fwd_0) \right] = \PE [  \log p_T(\fwd_T) - \int_0^T \dive( \hlblue{b_\theta(s, \fwd_s)}) \rmd s ].
+%     % }
+% \end{equation}
+% %
+% % The 
+% vs \textbf{discrete} normalising flows with invertible map $f_\theta:\rset^d \rightarrow \rset^d$ ($\c{O}(d^3)$)
+% \begin{equation}
+% \PE \left[ \log p_0(\fwd_0) \right] = \PE \left[  \log p_T(f_\theta(\fwd_0)) - \log |\mathrm{D} f_\theta(\fwd_0)|  \right].
+% \end{equation}
+% \end{frame}
+
+
+\begin{frame}{Recap: Continuous diffusion models}
+ %
+ \begin{center}
+        \includegraphics[width=\textwidth]{images/sde.png}
+    \end{center}
+\begin{itemize} \setbeamertemplate{itemize items}[triangle]
+    \item Continuously \textbf{noise} data samples with forward SDE
+    \item Aim: time-reversal of this process $\Rightarrow$ \textbf{denoising} process
+    % \begin{itemize} \setbeamertemplate{itemize items}[circle]
+    % \item Same variance as the forward process
+    % \item Its mean depends on the forward process's mean and the \textbf{Stein score}
+    % \item The score is parametrised and trained by learning to `denoise' samples
+    % \item Generate samples by discretising the (approximate) backward process with Euler-Maruyama
+    % \end{itemize}
+\end{itemize}
+%
+% \begin{itemize}
+%     \item Idea: Use a \textit{continuous} series of noise scales!
+%     \item Do this by constructing an \textbf{SDE} forward noising process $(\fwd_t)_{t \in \ccint{0,T}}$.
+%     \item Have this noising converge to a \textbf{known distribution}.
+%     \item \textbf{Invert} this SDE noising process to get $(\bwd_t)_{t\in[0,T]} = (\fwd_{T-t})_{t}$.
+% \end{itemize}
+\end{frame}
+
+% \section{A variational perspective}
+
+% % \begin{frame}{Equivalence between SM and ELBO loss}
+% % \begin{frame}{Discrete SGMs}
+
+% % \todo[inline]{To fill}
+% % \cite{sohl2015deep,ho2020denoising,nichol2021improved}
+% % \end{frame}
+
+
+% \begin{frame}{Discrete SGMs: ELBO \cite{sohl2015deep,ho2020denoising}}
+% %
+% We assume a discrete process induced by the \textbf{forward transition} $q(\v{y}_{t}|\v{y}_{t-1})$:
+%     % $p_{k+1|k}(\v{y}_{k+1}|\v{y}_{k})$ (e.g.\ $\c{N}(\mu_k(\v{y}_k), \sigma_k)$
+%      % (e.g.\ $\c{N}(\mu_k(\v{y}_t), \sigma_t)$)
+% %
+%     \begin{equation}\label{eq:forward_markov}
+%          q(\v{y}_{0:T}) = q(\v{y}_0) \prod_{t=1}^{T} q(\v{y}_{t}|\v{y}_{t-1}).
+%     \end{equation}
+% %
+% The (intractable) \textbf{backward transition} $p_{t-1|t}(\v{y}_{t-1}|\v{y}_{t})$ 
+% % $p_{t|t+1}(\v{y}_{t}|\v{y}_{t+1}) = p_{t+1|t}(\v{y}_{t+1}|\v{y}_{t}) p_{t}(\v{y}_{t})/ p_{t+1}(\v{y}_{t+1})$ 
+% induces a backward process% given by the Markov chain
+% % For Gaussian forward process, the \textbf{backwards process}, $p(x_{t-1}|x_{t})$, is also (approximately, for sufficiently small steps) Gaussian with intractable mean and closed-form variance, yielding
+%     % \begin{equation}\label{eq:backward_markov}
+%     %     p(x_{0:N}) = p(x_N) \prod_{k=0}^{N-1} p_{k|k+1}(x_{k}|x_{k+1}).
+%     % \end{equation}
+%     \begin{equation}\label{eq:backward_markov}
+%         p({\v{y}}_{0:T}) = p({\v{y}}_T) \prod_{t=T}^{1} p({\v{y}}_{t-1}|{\v{y}}_{t}).%, \quad p({x}_{t-1}|{x}_{t}) \approx \c{N}\del{{x}_{t-1}\middle| \v{\mu}\del{{x}_t, t}, \m{\Sigma}_t}.
+%     \end{equation}
+%     \pause
+%     %
+%     % But how do we \textbf{train} an approximate mean function ${\v{\mu}_\theta}\del{\v{y}_t, t}$?
+% A bound on the (negative) \textbf{log-likelihood} can be derived as
+%     \begin{align*}
+%         \E\sbr{-\log p_\theta(\v{y}_0)} \leq \E_q\sbr{- \log \frac{p_\theta(\v{y}_{0:T})}{q(\v{y}_{1:T}|\v{y}_0)}} = \E_q \sbr{ -\log p(\v{y}_T) - \sum_{t \geq 1}\log \frac{p_\theta(\v{y}_{t-1}| \v{y}_{t})}{q(\v{y}_t | \v{y}_{t-1})}}
+%         \triangleq \c{E}
+%         % \log p_\theta({x_0}) &\geq \E_{q({x}_{1:T}|{x}_0)}\sbr{\log \frac{p_\theta({x}_{0:T})}{q({x}_{1:T}|{x}_0)}} = \E_{q({x}_{1:T}|{x}_0)} \sbr{\log p({x}_T) + \sum_{t \geq 1}\log \frac{p_\theta({x}_{t-1}| {x}_{t})}{q({x}_t | {x}_{t-1})}} 
+%         % \\ &\geq
+%     \end{align*}
+%     which can straightforwardly be estimated via Monte Carlo sampling.
+%     % All these terms are computable, and so we could train via Monte Carlo sampling and SGD.
+
+% \end{frame}
+
+
+% \begin{frame}{A more efficient EBLO}
+% %
+% \vspace{-1.2em}
+% \begin{equation*}
+%     \c{E} = 
+%     \E_q \sbr{
+%         \underbrace{
+%             D_{KL} \del{q(\v{y}_T | \v{y}_0) \middle| \middle| p(\v{y}_T)}
+%         }_{\hlblue{\scriptstyle L_T}}
+%          + \sum_{t>1} \underbrace{
+%             D_{KL}\del{q(\v{y}_{t-1}| \v{y}_t, \v{y}_0)  \middle| \middle | p_\theta(\v{y}_{t-1} | \v{y}_t)}
+%         }_{\hlred{\scriptstyle L_{t-1}}}
+%         \underbrace{- \log p_\theta(\v{y}_0 | \v{y}_1)}_{\hlorange{\scriptstyle L_0}}
+%     }.
+% \end{equation*}
+% \vspace{-1.0em}
+% %
+% \begin{itemize}
+%     \item[\hlblue{L_T}] \textit{prior matching}: constant if we fix $q$
+%     \item[\hlorange{L_0}] \textit{reconstruction}: can compute directly
+%     \item[\hlred{L_{t-1}}] \textit{denoising matching}: requires access to $q(\v{y}_{t-1}| \v{y}_t, \v{y}_0)=q(\v{y}_{t-1}| \v{y}_0)$
+% \end{itemize}
+% \pause
+% % These are all closed form KL divergences!
+% % Fortunately we can get at this! $q(\v{y}_{t-1}| \v{y}_t, \v{y}_0) = \c{N}\del{\v{y}_{t-1} \middle | \tilde{\v{\mu}}_t\del{\v{y}_t, \v{y}_0}, \tilde{\beta}_t \m{I}}$ with
+% % \begin{equation*}
+% %     \tilde{\v{\mu}}_t\del{\v{y}_t, \v{y}_0} = \frac{\sqrt{1-\alpha_{t-1}} \beta_t}{\alpha_t}\v{y}_0 + \frac{\sqrt{1-\alpha_t}(\alpha_{t-1})}{\alpha_t}\v{y}_t \; \text{and} \; \tilde{\beta}_t = \frac{\alpha_{t-1}}{\alpha_t}\beta_t
+% % \end{equation*}
+% Denoting $\v{\mu}_q\del{x_t, x_0} = \PE[\fwd_t|\fwd_0]$ and ${\sigma}_q\del{t} = \text{Std}[\fwd_t|\fwd_0]$
+
+% Choosing $p(\v{y}_{t-1}|\v{y}_{t}) \approx p_\theta(\v{y}_{t-1}|\v{y}_{t}) \triangleq \c{N}\del{\v{y}_{t-1}\middle| \v{\mu}_\theta \del{t, \v{y}_t}, \sigma^2_q(t) \Id}$ we have
+% %
+% \begin{align*}
+%  \Rightarrow \arg\min_\theta D_{KL}\del{q(\v{y}_{t-1}| \v{y}_t, \v{y}_0)  \middle| \middle | p_\theta(\v{y}_{t-1} | \v{y}_t)} 
+%  &= \arg\min_\theta \tfrac{1}{2}  \tfrac{1}{\sigma^2_q\del{t}} \left[\| \v{\mu}_\theta\del{t, \v{y}_t} - \v{\mu}_q\del{\v{y}_t, \v{y}_0} \|^2\right] \\
+%  &\hspace{-5em} = \arg\min_\theta  \tfrac{1}{2}\tfrac{1}{ \sigma^2_q\del{t}} C(t) \left[\| \hlyellow{\mathbf{s}_\theta}\del{t, \v{y}_t} - \nabla \log q\del{\v{y}_t|\v{y}_0} \|^2\right].
+% \end{align*}
+% %
+% \end{frame}
+
+
+
+% % \begin{frame}{Continuous SGMs: Bounding KL divergence}
+% \begin{frame}{Continuous SGMs: Score matching as ELBO}
+% % \cite{huang2021variational,song2021maximum}
+% %
+% We now assume a continuous process $\rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t$ with reversal
+% \begin{equation}
+% % \rmd \fwd_t = \hlblue{b(t, \fwd_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t.
+% \rmd \bwd_t = \left[ -\hlblue{b(T-t,\bwd_t)} + \hlred{\sigma^2(T-t)} \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right]  \rmd t + \hlred{\sigma(T-t)} \rmd \bfB_t.
+% \end{equation}
+% \pause
+% %
+% % We remind the score matching losses:
+% % \begin{align*}
+% %     \ell_{\mathrm{sm}}(\hlyellow{\mathbf{s}_\theta}; \lambda(\cdot)) &\triangleq \tfrac{1}{2}\PE_{t,x_t}{\left[ \lambda(t) \|\hlyellow{\mathbf{s}_\theta}(t, x_t) - \nabla_{x_t} \log p_{t}(x_t)\|^2 \right]} \\
+% %     \ell_{\mathrm{dsm}}(\hlyellow{\mathbf{s}_\theta}; \lambda(\cdot)) &\triangleq \tfrac{1}{2}\PE_{x_0,t,x_t}{\left[ \lambda(t) \|\hlyellow{\mathbf{s}_\theta}(t, x_t) - \nabla_{x_t} \log p_{t|0}(x_t|x_0)\|^2 \right]}\\
+% %     % \ell_{\mathrm{ism}}(\hlyellow{\mathbf{s}_\theta}; \lambda(\cdot)) &\triangleq \PE_{x_0,t,x_t}{\left[ \lambda(t) \left(\tfrac{1}{2} \|\hlyellow{\mathbf{s}_\theta}(t, x_t)\|^2 + \dive \left(\hlyellow{\mathbf{s}_\theta}(t, \cdot)\right)(x_t) \right) \right]}
+% % \end{align*}
+% % \pause
+% % \vspace{-3em}
+% %
+% \begin{theorem}{\cite{song2021maximum}}{}
+% Under some regularity assumptions, setting the weighting to $\lambda(t) = \sigma^2(t)$:
+% \begin{equation}
+% \mathrm{D}_{\text{KL}}(p | p_\theta) 
+% \le \ell_{\mathrm{sm}}(\hlyellow{\mathbf{s}_\theta}; \sigma^2(\cdot)) + \mathrm{D}_{\text{KL}}(p_T | \piinv)
+% = \ell_{\mathrm{dsm}}(\hlyellow{\mathbf{s}_\theta}; \sigma^2(\cdot)) + C + \mathrm{D}_{\text{KL}}(p_T | \piinv).
+% \end{equation}
+% \begin{align*}
+% \E_{p_0(\v{y})}\sbr{-\log p_\theta(\v{y})} \leq
+% % \mathrm{D}_{\text{KL}}(p | p_\theta)  
+% \ell_{\mathrm{sm}}(\hlyellow{\mathbf{s}_\theta}; \sigma^2(\cdot)) + C_1
+% = \ell_{\mathrm{dsm}}(\hlyellow{\mathbf{s}_\theta}; \sigma^2(\cdot)) + C_2.
+% \end{align*}
+% \end{theorem}
+
+% % You get this by seeing, for path measures $\v{\mu}$ and $\v{\nu}$ on the backwards and approx. SDEs.
+% % \begin{equation*}
+    
+% % \end{equation*}
+% \end{frame}
+
+% \begin{frame}{ELBOs for single datapoints}
+% \begin{theorem}{\cite{song2021maximum,huang2021variational}}{}
+% \begin{equation*}
+%     -\log p_\theta(\v{y}) \leq \c{L}_\theta^{SM}(\v{y}) = \c{L}_\theta^{DSM}(\v{y})    
+% \end{equation*}
+% \end{theorem}
+% \hfill
+% \begin{align*}
+%     &\c{L}_\theta^{SM}(\v{y}_0) = -\overbrace{\E_{p(\v{y}_T | \v{y}_0)} \sbr{\log p_{ref}(\v{y}_T)}}^{\text{const.}}\\ 
+%     &\quad+\frac{1}{2} \int_0^T \E_{p(\v{y}_t | \v{y}_0)}\sbr{ \underbrace{2\hlred{\sigma(t)}^2\nabla_{\v{y}_t} \cdot \hlyellow{s_\theta}(t, \v{y}_t) + \hlred{\sigma(t)}^2 \norm{\hlyellow{s_\theta}(t, \v{y}_t)}^2}_{\text{implicit score matching}} - \underbrace{2\nabla_{\v{y}_t} \cdot \hlblue{b(t, \v{y}_t)}}_{\text{const.}}  } \rmd t\\
+% \end{align*}
+% \hfill
+% \end{frame}
+
+% \begin{frame}{ELBOs for single datapoints}
+% \begin{theorem}{\cite{song2021maximum,huang2021variational}}{}
+% \begin{equation*}
+%     -\log p_\theta(\v{y}) \leq \c{L}_\theta^{SM}(\v{y}) = \c{L}_\theta^{DSM}(\v{y})    
+% \end{equation*}
+% \end{theorem}
+% \vspace{-0.5em}
+% \begin{align*}
+%     &\c{L}_\theta^{DSM}(\v{y}_0) =  -\overbrace{\E_{p(\v{y}_T | \v{y}_0)} \sbr{\log p_{ref}(\v{y}_T)}}^{\text{const.}}\\ 
+%     &+\quad\frac{1}{2} \int_0^T \E_{p(\v{y}_t | \v{y}_0)}\sbr{ \underbrace{\hlred{\sigma(t)}^2 \norm{ \hlyellow{s_\theta}(t, \v{y}_t) - \nabla_{\v{y}_t} \log p(\v{y}_t | \v{y}_0) }^2}_{\text{denoising score matching}}} \rmd t \\
+%     &-\quad\frac{1}{2} \int_0^T \E_{p(\v{y}_t | \v{y}_0)}\sbr{\underbrace{\hlred{\sigma(t)}^2 \norm{\nabla_{\v{y}_t} \log p(\v{y}_t | \v{y}_0) }^2 + 2\nabla_{\v{y}_t} \cdot \hlblue{b(t, \v{y}_t)}}_{\text{const.}} } \rmd t
+% \end{align*}
+% \end{frame}
+
+% \begin{frame}{Continuous-time ELBO}
+% %
+% \vspace{-.3em}
+% \begin{theorem}{\cite{huang2021variational,song2021maximum}}{}
+% %
+% % \begin{equation}
+% % \c{E}^\infty \triangleq  \PE{\left[ -\tfrac{1}{2} \int_0^T  \| \mathbf{s}_\theta(t, \omega) \|^2_2 \rmd t + \log p_0(\bwd_T) - \int_0^T \nabla \cdot b(t, ??) ~\rmd t | \bwd_0=x \right]}
+% % \end{equation}
+% % where the expectation is taken w.r.t.\ the Brownian motion $\hat{B}$ ???, and $\bwd_t$ solves $\rmd \bwd_t = [- b(T-t, \cdot) + \sigma(T-t) \mathbf{s}_\theta](\bwd_t) \rmd t + \sigma(T-t) \rmd B_t$.
+% %
+% Under some regularity assumptions, a continuous-time ELBO $\c{E}^\infty$ lower bounding the model log-likelihood $\log p_\theta(x)$ can be written as (Feynman-Kac)
+% \begin{align*}
+% % \c{E}^\infty \triangleq  \PE{\left[ -\tfrac{1}{2} \int_0^T  \| \mathbf{s}_\theta(t, \omega) \|^2_2 \rmd t + \log p_0(\bwd_T) - \int_0^T \nabla \cdot b(t, ??) ~\rmd t \right]}
+% % \log p_\theta(x) \le 
+% \c{E}^\infty 
+% &\triangleq \PE_{\mathbb{Q}}{\left[ \log \frac{\rmd \mathbb{P}}{\rmd \mathbb{Q}} + \log \piinv(\fwd_T) - \int_0^T \dive (\sigma^2 \hlyellow{\mathbf{s}_\theta}- b)(\fwd_t) \rmd t ~\middle|~ \fwd_0=x \right]} \\
+% &= \PE_{p_{T|0}(x_T|x)}{\left[ \log \piinv(x_T) \right]}
+% - \int_0^T \PE_{p_{t|0}(x_t|x)}{\left[ \tfrac{1}{2} \sigma^2 \| \hlyellow{\mathbf{s}_\theta} \|^2_2 + \dive (\sigma^2 \hlyellow{\mathbf{s}_\theta}- b) \right]} \rmd t.
+% \end{align*}
+% The variational gap can be written as the (explicit) score matching loss:
+% \begin{equation}
+% % \log p_\theta(x) - \c{E}^\infty = \int_0^T \PE{\left[ \sigma^2(t) \| \mathbf{s}_\theta(t, \omega) - \nabla \log p_{T-t}(\bwd_t) \|^2_2 \right]} \rmd t.
+% \log p_\theta(x) - \c{E}^\infty = \int_0^T \PE{\left[ \sigma^2(t) \| \hlyellow{\mathbf{s}_\theta}(t, x_t) - \nabla \log p_{t}(x_t) \|^2_2 \right]} \rmd t.
+% \end{equation}
+% In particular it is tight, i.e.\ $\log p_\theta(x) = \c{E}^\infty$, if $\hlyellow{\mathbf{s}_\theta}(t, x) = \nabla \log p_{t}(x)$ a.e.\ .
+
+% %
+% % Under some regularity assumptions, the log-likelihood can be bounded as
+% % \begin{align*}
+% % \log p_\theta(x) &\le \PE_{p_{T|0}(x_T|x)}{\left[ \log \piinv(x_T) \right]} 
+% % - \int_0^T \PE_{p_{t|0}(x_t|x)}{\left[ \nabla \cdot b(t, x_t) \right]} \rmd t \\
+% % &-\tfrac{1}{2} \int_0^T \PE_{p_{t|0}(x_t|x)}{\left[ \sigma^2(t) \| \mathbf{s}_\theta(t, \omega) - \nabla \log p_{t|0}(x_t|x_0) \|^2_2 \right]} \rmd t.
+% % \end{align*}
+% % This bound is tight if $\mathbf{s}_\theta(t, x) = \nabla \log p_{T-t}(x)$ almost everywhere.
+% %
+% \end{theorem}
+% \end{frame}
+
+% \section{Active research directions}
+
+% \begin{frame}{Active research directions}
+
+% \begin{itemize}  \setbeamertemplate{itemize items}[triangle]
+%     \item \textit{Accelerate} reverse sampling
+%     \item \textit{Structured data}: text, graph, discrete, manifold, protein, functions etc
+%     \item \textit{Latent} manipulation
+%     \item \textit{Scaling} for large models
+%     % \item Connections with other methods
+%     \item \textit{Theory}: how come it works so well?
+%     % \item ??
+% \end{itemize}
+% \end{frame}
