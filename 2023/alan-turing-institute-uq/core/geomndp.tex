@@ -1,211 +1,3 @@
-\section{Motivation Geometric Neural Diffusion Processes}
-
-\begin{frame}{Goal}
-{Build probabilistic model over feature fields $f: \mathcal{X} \rightarrow \mathcal{Y}$.}
-\begin{figure}
-\includegraphics[width=.7\linewidth]{images/functions}
-\end{figure}
-\pause
-\vspace{-5mm}
-\textbf{Why}
-\begin{itemize}
-    \item Many physical and natural phenomena are better characterised as functions.
-    \item Meta-learn and treat limited data as originating from a function
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Feature Fields: $f: \mathcal{X} \rightarrow \mathbb{R}^d$}
-
-\begin{itemize}
-    \item Mathematical framework for modelling natural phenomena.
-    \item Examples: Temperature $f:\mathcal{X}\rightarrow\mathbb{R}$,
-    and wind direction on globe $f:\mathcal{S}^2\rightarrow T\mathcal{S}^2$.
-\end{itemize}
-
-    % \begin{itemize} 
-    %     \item Build a probabilistic model over feature fields $f: \mathcal{X} \rightarrow \mathcal{Y}$
-    %     \item Encode invariances w.r.t. group transformations $p(f) = p(g\cdot f),\ \forall g \in G$.
-    % \end{itemize}
-    % \textbf{Examples:}
-    \begin{figure}
-        \centering
-        \begin{subfigure}{0.45\textwidth}
-            \centering
-            \includegraphics[width=0.95\textwidth]{images/geomndp/tensors/salinity_and_current}
-            \caption{Temperature map and wind vector fields.}
-        \end{subfigure}
-        \hfill
-        \begin{subfigure}{0.45\textwidth}
-            \centering
-            \includegraphics[width=0.95\textwidth]{images/geomndp/tensors/stress_wiki.png}
-            \caption{3D stress tensor (type-2) diagram.}
-        \end{subfigure}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Prior invariances}
-Encode invariances w.r.t. group transformations. For a group $G$, we want $\forall g \in G$
-\begin{equation*}
-p(f) = p(g\cdot f) \quad\text{with}\quad g \cdot f = \rho(g) f (g^{-1} x).
-\end{equation*}
-\pause
-\textbf{Examples} translation invariance (stationarity) and rotational invariance.
-\begin{figure}[t]
-\centering
-\begin{subfigure}[b]{0.45\textwidth}
-\centering
-\includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/1d/prior_ndp_shift.pdf}
-% \caption{$G=T(1)$}
-\end{subfigure}%
-\hspace{0.3cm}
-\begin{subfigure}[b]{0.45\textwidth}
-\centering
-\includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/2d/prior_ndp_rot.pdf}
-% \caption{$G=O(2)$}
-\vspace{-.75em}
-\end{subfigure}
-\label{fig:prior_model}
-\end{figure}
-% \item We get these properties for free in most GP kernels.
-% \item How can we encode them in our diffusion models on funcions?
-\end{frame}
-
-% \begin{frame}{Equivariant conditional processes}
-%     A stochastic process with distribution $\mu$ given a context $\mathcal{C}$ is said to be conditionally $G-$equivariant if the conditional satisfies $\hlorange{\mu(\mathsf{A} | g \cdot \mathcal{C}) = \mu(g \cdot \mathsf{A} |\mathcal{C})}$, or equivalently  $\hlorange{\mu(g^{-1} \cdot \mathsf{A} | g \cdot \mathcal{C}) = \mu(\mathsf{A} |\mathcal{C})}$, for any $g \in G$ and $\mathsf{A} \in \mathrm{C}(\mathcal{X},\mathcal{Y})$ measurable.
-
-%     \begin{figure}[t]
-%         % \begin{wrapfigure}[20]{r}{.5\linewidth}
-%             \vspace{-1em}
-%             \centering
-%              \begin{subfigure}[b]{0.49\textwidth}
-%              \centering
-%              \vspace{0.em}
-%               \includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/1d/conditional_ndp_shift.pdf}
-%             % \includegraphics[width=.48\linewidth,trim={0 0 0 0},clip]{../figs/1d_conditional.png}
-%             % \includegraphics[width=.48\linewidth,trim={0 0 0 0},clip]{../figs/1d_conditional_shift.png}
-%              \end{subfigure}
-%              \begin{subfigure}[b]{0.49\textwidth}
-%              \centering
-%              \vspace{0.em}
-%             \includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/2d/conditional_ndp_rot.pdf}
-%             % \includegraphics[width=.48\linewidth,trim={40em 0 0 0},clip]{../figs/conditional_ndp_rot.png}
-%             %  \includegraphics[width=.48\linewidth,trim={4em 0 36em 0},clip]{../figs/conditional_ndp_rot.png}
-%             \vspace{-.75em}
-%             % \vfill
-%             \end{subfigure}
-%             \vspace{-0.5em}
-%             \caption{
-%             Samples from equivariant neural diffusion processes conditioned on context set $\mathcal{C}$ (\textcolor{C3}{in red}) for scalar (\emph{Left}) and 2D vector (\emph{Right}) fields.
-%             Same model is then conditioned on transformed context $g \cdot \mathcal{C}$. %, with group element $g$ being a translation of length $2$ (\emph{Left}) or a $90^{\circ}$ rotation (\emph{Right}).
-%             }
-%             \label{fig:posterior_model}
-%         \end{figure}
-% \end{frame}
-
-
-\begin{frame}{Conditional process}
-\begin{itemize}
-    \item Interested in the conditional process given a
-    set of observations $\mathcal{C} = \{(x_n, y_n)\}_{n=1}$.
-\item If the prior is $G$-invariant, then the conditional is $G$-equivariant:
-    $$
-    p(f \mid \mathcal{C}) = p(g\cdot f| g \cdot \mathcal{C})
-    \quad\text{where}\quad g \cdot \mathcal{C} = \{(g \cdot x_n, \rho(g) y_n) \}.
-    $$
-\end{itemize}
-\begin{figure}[t]
-% \begin{wrapfigure}[20]{r}{.5\linewidth}
-    % \vspace{-1em}
-    \centering
-        \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \vspace{0.em}
-        \includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/1d/conditional_ndp_shift.pdf}
-    % \includegraphics[width=.48\linewidth,trim={0 0 0 0},clip]{../figs/1d_conditional.png}
-    % \includegraphics[width=.48\linewidth,trim={0 0 0 0},clip]{../figs/1d_conditional_shift.png}
-        \end{subfigure}
-        \begin{subfigure}[b]{0.49\textwidth}
-        \centering
-        \vspace{0.em}
-    \includegraphics[width=1.\linewidth,trim={0 0 0 0},clip]{images/geomndp/2d/conditional_ndp_rot.pdf}
-    % \includegraphics[width=.48\linewidth,trim={40em 0 0 0},clip]{../figs/conditional_ndp_rot.png}
-    %  \includegraphics[width=.48\linewidth,trim={4em 0 36em 0},clip]{../figs/conditional_ndp_rot.png}
-    \vspace{-.75em}
-    % \vfill
-    \end{subfigure}
-    \vspace{-0.5em}
-    % \caption{
-    % Samples from equivariant neural diffusion processes conditioned on context set $\mathcal{C}$ (\textcolor{C3}{in red}) for scalar (\emph{Left}) and 2D vector (\emph{Right}) fields.
-    % Same model is then conditioned on transformed context $g \cdot \mathcal{C}$. %, with group element $g$ being a translation of length $2$ (\emph{Left}) or a $90^{\circ}$ rotation (\emph{Right}).
-    % }
-    \label{fig:posterior_model}
-\end{figure}
-\end{frame}
-
-% \begin{frame}{Overview}
-%     %
-%    \begin{itemize} \setbeamertemplate{itemize items}[triangle]
-%        \item Aim
-%        \begin{itemize}
-%         \item Construct probabilistic model over feature/tensor fields.
-%        \item Enforce invariance w.r.t.\ group transformations.
-%        \end{itemize}
-%        \item Achieve this by
-%        \begin{itemize}
-%         \item Constructing diffusion model over function spaces by correlating marginals.
-%        \item Enforce invariance using a kernel and score network which are group equivariant.
-%        \end{itemize}
-%    \end{itemize}
-% %
-%     % \vspace{-.8em}
-%     \begin{figure}%{r}{0.4 \textwidth}
-%     \centering
-%     \includegraphics[height=0.3\textheight]{images/geomndp/2d/steerable_demo.pdf}
-%     \caption{Transformation of feature field.}
-%     \end{figure}
-%         %
-%    \end{frame}
-
-% \begin{frame}{Feature fields: e.g.\ salinity, current and vorticity}
-
-%     \begin{figure}%{r}{0.4 \textwidth}
-%         \begin{subfigure}{0.49\textwidth}
-%             \centering
-%             \includegraphics[width=1.\textwidth]{images/geomndp/tensors/salinity_and_current}
-%             \caption{Salinity scalar field and current vector field.}
-%         \end{subfigure}
-%         \hfill
-%         \begin{subfigure}{0.45\textwidth}
-%             \centering
-%             \includegraphics[width=1.\textwidth]{images/geomndp/tensors/vorticity.png}
-%             \caption{Vorticity pseudo-vector field.}
-%         \end{subfigure}
-%         \caption{Credits Gregory et al. 2020.}
-%         \end{figure}
-    
-% \end{frame}
-
-% \begin{frame}{Feature fields: e.g.\ Cauchy stress}
-%     \vspace{2em}
-%     \begin{figure}%{r}{0.4 \textwidth}
-%         \begin{subfigure}{0.4\textwidth}
-%             \centering
-%             \includegraphics[width=1.\textwidth]{images/geomndp/tensors/stress_wiki.png}
-%             \caption{Stress tensor diagram.}
-%         \end{subfigure}
-%         \hfill
-%         \begin{subfigure}{0.54\textwidth}
-%             \centering
-%             \includegraphics[width=1.\textwidth]{images/geomndp/tensors/stress2.pdf}
-%             \caption{Components of the three-dimensional stress tensor in diamond cell.}
-%         \end{subfigure}
-%         \caption{Credits to wikipedia and Gregory et al. 2020.}
-%         \end{figure}
-    
-% \end{frame}
-
-
-
 \section{Diffusion on Function Spaces}
 
 \begin{frame}{Continuous noising process}
@@ -269,26 +61,26 @@ and $m: \X \rightarrow \Y$.
 \end{figure}
 \end{frame}
 
-\begin{frame}{Denoising process}
-    As before, the \textbf{time-reversal process} $(\bwd_t(x))_{t \geq 0}$ also satisfies an SDE given by
-    \begin{align}\label{eq:backward_SDE}
-        \textstyle 
-        \rmd \bwd_t(\x) &= {\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \hlyellow{\mathrm{K}(\x,\x) \nabla \log p_{T-t}(\bwd_t(\x))} \} \beta_{T-t}} \rmd t \nonumber \\
-        &\qquad + {\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t, 
-      \end{align}
-      with $\bwd_0 \sim \mathrm{GP} (m, k)$.
+% \begin{frame}{Denoising process}
+%     As before, the \textbf{time-reversal process} $(\bwd_t(x))_{t \geq 0}$ also satisfies an SDE given by
+%     \begin{align}\label{eq:backward_SDE}
+%         \textstyle 
+%         \rmd \bwd_t(\x) &= {\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \hlyellow{\mathrm{K}(\x,\x) \nabla \log p_{T-t}(\bwd_t(\x))} \} \beta_{T-t}} \rmd t \nonumber \\
+%         &\qquad + {\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t, 
+%       \end{align}
+%       with $\bwd_0 \sim \mathrm{GP} (m, k)$.
 
-\pause
-To simulate the reverse process we learn the (preconditioned) score
-$$
-\v{s}^K_\theta(t, \bwd_t(x), x) \approx \mathrm{K}(x, x) \nabla \log p_{T-t}(\bwd_t(x)),
-$$
-where $\v{s}^K_\theta: \mathbb{R} \times \mathcal{Y}^m \times \mathcal{X}^m \rightarrow \mathrm{T} \mathcal{Y}^m$.
-We accomplish this using the score matching objective
-$$
-\mathcal{L}(\theta) = \mathbb{E}\left[ \lambda(t) \| \v{s}^K_\theta(t, \fwd_t(x), x) + \mathrm{K}^{1/2} \epsilon \|^2_2\right].
-$$
-\end{frame}
+% \pause
+% To simulate the reverse process we learn the (preconditioned) score
+% $$
+% \v{s}^K_\theta(t, \bwd_t(x), x) \approx \mathrm{K}(x, x) \nabla \log p_{T-t}(\bwd_t(x)),
+% $$
+% where $\v{s}^K_\theta: \mathbb{R} \times \mathcal{Y}^m \times \mathcal{X}^m \rightarrow \mathrm{T} \mathcal{Y}^m$.
+% We accomplish this using the score matching objective
+% $$
+% \mathcal{L}(\theta) = \mathbb{E}\left[ \lambda(t) \| \v{s}^K_\theta(t, \fwd_t(x), x) + \mathrm{K}^{1/2} \epsilon \|^2_2\right].
+% $$
+% \end{frame}
 
 % \begin{frame}{Score approximation}
     
@@ -394,20 +186,24 @@ $$
     \vspace{3mm}
     \begin{proposition}{Invariant Neural Diffusion Processes}{}
         \label{prop:inv_prior}
-    The denoising process on functions induced by
-    \begin{align}\label{eq:approx_backward_SDE}
-        \textstyle 
-        \rmd \bwd_t^\theta(\x) &= \hlblue{\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \mathbf{s}^K_\theta(T - t, \x, \bwd_t(\x)) \} \beta_{T-t}} \rmd t \nonumber \\
-        &\quad + \hlred{\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t,
-      \end{align}
+    The denoising process on functions as defined above
+    % \begin{align}\label{eq:approx_backward_SDE}
+    %     \textstyle 
+    %     \rmd \bwd_t^\theta(\x) &= \hlblue{\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \mathbf{s}^K_\theta(T - t, \x, \bwd_t(\x)) \} \beta_{T-t}} \rmd t \nonumber \\
+    %     &\quad + \hlred{\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t,
+    %   \end{align}
     %  the time-reversal SDE \eqref{eq:backward_SDE} where the score is approximated by a score network $\mathbf{s}_\theta: [0, T] \times \X^n \times \Y^n \rightarrow \rmT \Y^n$, 
      and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
      \begin{enumerate}
-        \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), and
+        \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), i.e.
+        $$
+        m(g \cdot x) = \rho(g) m(x)\quad\text{and}\quad k(g \cdot x, g \cdot x') = \rho(g)k(x,x')\rho(g)^\top,
+        $$
         \item the score network is $G$-equivariant vector field, i.e.
         $$
-        \mathbf{s}^K_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y)\text{ for all }\x \in \X, g \in G.
+        \mathbf{s}_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y),
         $$
+        for all $\x \in \X, g \in G.$
      \end{enumerate}
     \end{proposition}
 
@@ -462,45 +258,45 @@ $$
 % \end{frame}
 
 
-\begin{frame}{$\mathrm{E}(d)$-invariant Gaussian processes}
+% \begin{frame}{$\mathrm{E}(d)$-invariant Gaussian processes}
     
-    \begin{center}
-        \includegraphics[width=.72\textwidth]{images/geomndp/2d/e2_equiv_kernels.png}
-    \end{center}
+%     \begin{center}
+%         \includegraphics[width=.72\textwidth]{images/geomndp/2d/e2_equiv_kernels.png}
+%     \end{center}
 
-    \begin{itemize}
-    \item $\mathrm{E}(d)$-equivariant means $m: \rset^d \rightarrow \rset^d$ are constant functions.
-    \pause
-    \item $\mathrm{E}(d)$-equivariant kernels $k: \rset^d \times \rset^d \rightarrow \rset^{d\times d}$ include
-    % \vspace{-0.5em}
-    \begin{itemize} \setbeamertemplate{itemize items}[triangle]
-        \item Diagonal kernels $k = k_0 \Id$ with $k_0$ invariant~\cite{holderrieth2021equivariant}.
-        \item $k_\mathrm{curl} = k_0 A$ with $A(x, x') = \Id - \frac{(x - x')(x - x')^\top}{l^2}$ ~\cite{macedo2010learning}.
-        \item $k_\mathrm{div} = k_0 B$ with $ B(x, x') =\frac{(x - x')(x - x')^\top}{l^2} + \left( n -1 - \frac{\|x - x' \|^2}{l^2} \right) \Id$. %~\cite{macedo2010learning}
-    \end{itemize}
-\end{itemize}
+%     \begin{itemize}
+%     \item $\mathrm{E}(d)$-equivariant means $m: \rset^d \rightarrow \rset^d$ are constant functions.
+%     \pause
+%     \item $\mathrm{E}(d)$-equivariant kernels $k: \rset^d \times \rset^d \rightarrow \rset^{d\times d}$ include
+%     % \vspace{-0.5em}
+%     \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%         \item Diagonal kernels $k = k_0 \Id$ with $k_0$ invariant~\cite{holderrieth2021equivariant}.
+%         \item $k_\mathrm{curl} = k_0 A$ with $A(x, x') = \Id - \frac{(x - x')(x - x')^\top}{l^2}$ ~\cite{macedo2010learning}.
+%         \item $k_\mathrm{div} = k_0 B$ with $ B(x, x') =\frac{(x - x')(x - x')^\top}{l^2} + \left( n -1 - \frac{\|x - x' \|^2}{l^2} \right) \Id$. %~\cite{macedo2010learning}
+%     \end{itemize}
+% \end{itemize}
 
-\end{frame}
-
-
+% \end{frame}
 
 
-\begin{frame}{Invariant neural diffusion processes (Cont'd)}
+
+
+% \begin{frame}{Invariant neural diffusion processes (Cont'd)}
     
-    \begin{figure}[t]
-    \vspace{-0.5em}
-    \centering
-        \includegraphics[width=.95\textwidth]{images/geomndp/2d/steerable_noising.pdf}
-        \vspace{-.5em}
-        \caption{
-            $(g \cdot {\fwd}_t(x))_{x \in \X}$
-            }
-        \label{fig:equiv_noising_model}
-    \end{figure}
+%     \begin{figure}[t]
+%     \vspace{-0.5em}
+%     \centering
+%         \includegraphics[width=.95\textwidth]{images/geomndp/2d/steerable_noising.pdf}
+%         \vspace{-.5em}
+%         \caption{
+%             $(g \cdot {\fwd}_t(x))_{x \in \X}$
+%             }
+%         \label{fig:equiv_noising_model}
+%     \end{figure}
 
-\end{frame}
+% \end{frame}
 
-\section{Conditional processes}
+% \section{Conditional processes}
 
 % \begin{frame}{Equivariant conditional processes}
 %     Let $\mathcal{C} = \{(x_n, y_n)\}_{n}$ be a context dataset of input and ouptut pair.
@@ -553,27 +349,29 @@ $$
 %     \end{proposition}
 % \end{frame}
 
-\section{Conditional sampling}
+\section{Conditional Process}
 
 \begin{frame}{Conditional sampling in diffusion models}
-\textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$
-Often the condition is a property (e.g., caption).
+\textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
 \pause
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{images/conditional_dalle.png}
 \caption{$p(image \mid text)$}
 \end{figure}
+Often the condition is a property (e.g., caption).
 \end{frame}
 
-\begin{frame}{Conditional sampling in diffusion models}
-\textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
+\begin{frame}{Conditional sampling in diffusion models for functions}
+% \textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
+
 Condition is a subspace of the state space: $y = (y^{(1)}, \ldots, y^{(m)})$ and $\mathcal{C} = (y^{(m+1)},\ldots, y^{(n)})$.
 \pause
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}
-\caption{$p(y \mid y^{(2)} = -1)$}
+\includegraphics[width=\linewidth]{images/conditioning_gp.png}
+% \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}
+\caption{Conditional samples $p(y^*\mid \mathcal{C})$.}
 \end{figure}
 \end{frame}
 

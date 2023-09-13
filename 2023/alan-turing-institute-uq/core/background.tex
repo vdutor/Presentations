@@ -1,0 +1,104 @@
+\section{Continuous diffusion models}
+
+% \begin{frame}{Principles of Score Generative Models (SGMs)}
+\begin{frame}{Principles of continuous diffusion models}
+\begin{center}
+    \includegraphics[width=\textwidth]{images/sde.png}
+    % TODO(Vincent): add
+    % \animategraphics[autoplay,loop,width=0.85\textwidth]{10}{images/perturb_vp/perturb_vp-}{0}{99}
+    \captionof{figure}{\cite{song2021Scorebased}}
+\end{center}
+\vspace{-0.5em}
+% So far we have talked about discrete noise scales. Why? The discrete steps leave approximation inaccuracies, and tricky maths!
+% Why going to the continuous setting? 1/ shed a new light on discrete SGMs 2/ easier quantitative bounds 3/ likelihood evaluation.
+\begin{itemize} \setbeamertemplate{itemize items}[triangle]
+    % \item Idea: Use a \textit{continuous} series of noise scales!
+    \item Idea: Destruct data with \textit{continuous} series of noise.
+    \item Do this by constructing an \textbf{SDE} forward noising process $(\fwd_t)_{t \in \ccint{0,T}}$.
+    \item Have this noising converge to a \textbf{known distribution}.
+    \item \textbf{Invert} this SDE noising process to get \textbf{denoising} process.
+\end{itemize}
+%
+\end{frame}
+
+
+\begin{frame}{Continuous noising processes}
+%   \todo[inline]{introduce forward noising process}
+%
+The \textbf{Forward process} progressively perturbs the data following a SDE
+\begin{equation}
+  \label{eq:sde}
+    \rmd \fwd_t = \hlblue{-\fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
+\end{equation}
+where $\bfB_t$ is Brownian motion (think of it conceptually as $\rmd \bfB_t / \rmd t \sim \mathcal{N}(0, \rmd t)$).
+\\
+\vspace{3mm}
+\textbf{Example: 2D Gaussian data}
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/forward.pdf}
+\caption{Forward process}
+\end{figure}
+% \vspace{0.5cm}
+% \textbf{Euler–Maruyama} discretisation with time step $\Delta_T \ll 1$ yields a Markov kernel: 
+% \begin{equation*}
+%      p(\v{Y}_{n+1} | \v{Y}_{n}) \approx \mathcal{N}(\v{Y}_{n+1}|\v{Y}_{n} +
+%      \Delta_T  \hlblue{b(t_n, \v{Y}_{n})}, { \Delta_T \hlred{\sigma^2(t_n,
+%      \v{Y}_n)}} \m{I}).
+% \end{equation*}
+% where $t_n = n \Delta T$.
+\end{frame}
+
+
+\begin{frame}{Continuous score-based models: Time reversal process}
+\vspace{-0.2em}
+\vspace{5mm}
+\begin{theorem}{\cite{cattiaux2021time,haussmann1986time}}{}
+% Under mild conditions on $p_0$,
+The time-reversed process
+$(\bwd_t)_{t \geq 0} = (\fwd_{T-t})_{t \in \ccint{0,T}}$, 
+with forward process $\rmd \fwd_t = {-\fwd_t} \rmd t + {\sqrt{2}} \rmd \bfB_t$,
+also satisfies an SDE given by
+\begin{equation*}
+\label{eq:backward_SDE}
+%   \rmd \bwd_t = \hlblue{\left[  \bwd_t + 2 \nabla \log p_{T-t}(\bwd_t)\right] } \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,\quad \bwd_0 \sim p_T.
+  \rmd \bwd_t = \left[ -{\bwd_t} + 2 \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right] \rmd t + \sqrt{2} \rmd \bfB_t,
+\end{equation*}
+assuming $ \bwd_0$ is distributed the same as $\fwd_T$.
+\end{theorem}
+%
+\pause
+%
+\textbf{Problem}
+  The Stein score $\hlyellow{\nabla \log p_t} =\nabla \log \int p_{data}(\fwd_0) p_{t\mid 0}(\fwd_t \mid \fwd_0) \rmd \fwd_0$ is intractable.
+% The Stein score $\hlyellow{\nabla \log p_t}$ is intractable (requires solving Fokker-Planck...) $\Rightarrow$ learn it!
+% \vspace{-0.5em}
+% \begin{enumerate}
+%     \item We do not have access to $\fwd_T \Rightarrow$ Approximate as $\fwd_T \approx \fwd_\infty$!
+%     \item The Stein score $\hlyellow{\nabla \log p_t}$ is intractable (requires solving Fokker-Planck...) $\Rightarrow$ learn it!
+%     \item Cannot solve the SDE exactly $\Rightarrow$ discretise!
+% \end{enumerate}
+%
+\end{frame}
+
+\begin{frame}{Denoising Score Matching}
+% \begin{itemize}
+    % \item The Stein score $\hlyellow{\nabla \log p_t} =\nabla \log \int p_{data}(\fwd_0) p_{t\mid 0}(\fwd_t \mid \fwd_0) \rmd \fwd_0$ is intractable.
+Parameterise score using neural network $\hlyellow{\mathbf{s}_\theta}: [0, T] \times \rset^d \rightarrow \rset^d$ and learn score using the Denoising Score
+Matching objective
+\begin{equation}
+    \textstyle
+    \mathcal{L}(\theta)
+     = \mathbb{E} [\|  \hlyellow{\mathrm{s}_\theta(t, \fwd_t)} - \nabla \log p_{t}({\fwd}_t| \fwd_0)\|^2].
+\end{equation}
+% \end{itemize}
+\textbf{Example}
+\begin{equation*}
+  \rmd \bwd_t = \left[ -{\bwd_t} + 2 \hlyellow{s_\theta(t,\bwd_t)}\right] \rmd t + \sqrt{2} \rmd \bfB_t,
+\end{equation*}
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/reverse.pdf}
+\caption{Reverse process}
+\end{figure}
+\end{frame}

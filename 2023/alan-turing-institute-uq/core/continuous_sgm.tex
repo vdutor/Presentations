@@ -120,7 +120,6 @@ We specify the drift to be linear and the diffusion coefficient to be constant
 
 \begin{figure}
 \centering
-% \includegraphics[width=\textwidth]{images/example_2d/forward.png}
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/forward.pdf}
 \caption{Forward OU process on 2D data.}
 \end{figure}
@@ -187,18 +186,7 @@ We specify the drift to be linear and the diffusion coefficient to be constant
 
 % \begin{frame}{Stochastic differential equations}
 \begin{frame}{Continuous score-based models: Time reversal process}
-    % \citeauthor{debortoli2021diffusion}
 \vspace{-0.2em}
-% Taking the limit $\gamma \rightarrow 0$...
-    
-% \begin{equation}\label{eq:forward_SDE}
-%   \rmd \fwd_t =\hlblue{-\fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,\quad \fwd_0 \sim p_0 ,
-% \end{equation}
-% \begin{equation}\label{eq:marginal_sde}
-%   \fwd_t|\fwd_0 = e^{-1}\fwd_0 + \bfB_{1-e^{-2t}}
-% \end{equation}
-%
-% \begin{theorem}{Time-reversal process~\cite{cattiaux2021time,haussmann1986time}}{}
 \vspace{5mm}
 \begin{theorem}{\cite{cattiaux2021time,haussmann1986time}}{}
 % Under mild conditions on $p_0$,
@@ -224,15 +212,6 @@ Challenges:
     \item Cannot solve the SDE exactly $\Rightarrow$ discretise!
 \end{enumerate}
 %
-
-% \vspace{1.em}
-% %
-% Training the score network $\hlyellow{\mathbf{s}_\theta}: \R_+ \times \rset^d \rightarrow \rset^d$ is the same as in the discrete setting, with the (denoising) score matching loss, but with continuous time.
-% \begin{equation*}
-%     % \ell_t(\mathbf{s}) = \PE_{x_0,t,x_t}{\left[ \lambda(t) \|\mathbf{s}(x_t) - \nabla_{x_t} \log p_{t|0}(x_t|x_0)\|^2 \right]}
-%     \ell_{\mathrm{dsm}, \lambda}(\hlyellow{\mathbf{s}_\theta}) = \E_{p(t) p(\fwd_0) p(\fwd_t | \fwd_0)}{\left[ \lambda(t) \norm{\hlyellow{\mathbf{s}_\theta}(t, \fwd_t) - \nabla_{\fwd_t} \log p_{t|0}(\fwd_t|\fwd_0)}^2 \right]}.
-% \end{equation*}
-% with $p(x_0,t,x_t) = p_0(x_0) p(t) p_{t|0}(x_t|x_0)$, $p(t) =\c{U}(0, T)$.
 \end{frame}
 
 
@@ -326,7 +305,6 @@ We make the following approximations
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/reverse.pdf}
-% \caption{Reverse process}
 \end{figure}
 % \begin{equation*}
 %      % \fwd_t \approx \fwd_{t-1} + \gamma_t \hlblue{b(t, \fwd_{t-1})} + \sqrt{\gamma_t} \hlred{\sigma(t, \fwd_t)} \bfZ_t , \quad \bfZ_t \sim \c{N}(\v{0},\m{I})
