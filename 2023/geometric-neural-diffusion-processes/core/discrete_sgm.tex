@@ -1,0 +1,209 @@
+
+% \begin{frame}{Principles of Score Generative Models (SGMs)}
+
+% % \begin{center}
+% %     \includegraphics[width=\textwidth]{images/sde.png}
+% % \end{center}
+
+% \begin{itemize}
+%     \item Idea: (stochastic) interpolation between data and easy-to-sample distribution.
+%     \item Constructing \textbf{forward noising} process.
+%     \item Converges to an easy-to-sample distribution (e.g.\ Gaussian).
+%     \item Invert forward noising process $\Rightarrow$ \textbf{denoising} process.
+% \end{itemize}
+
+\section{Discrete SGMs}
+% \begin{frame}{Denoising Diffusion Probabilistic Models \cite{sohl2015deep,ho2020denoising}}
+\begin{frame}{Discrete SGMs: Noising process}
+    % DDPMs have a similar principle to the multi-scale score matching.
+    Discrete SGMs~\cite{sohl2015deep,ho2020denoising,debortoli2021diffusion}  have a similar principle to the multi-scale score matching.
+    
+    A \textbf{forward process}, $p(\v{x}_t | \v{x}_{t-1})$ (pictured, $q(\v{x}_t | \v{x}_{t-1})$), takes data and turns it into noise.
+    \begin{center}
+        \includegraphics[width=\textwidth]{images/ddpm.png}
+    \end{center}
+    \pause
+    We then want to \textbf{reverse} this process to be able to turn noise back into data! We need to \textit{learn} $p(\v{x}_{t-1} | \v{x}_{t})$.
+
+\end{frame}
+
+\begin{frame}{Choosing a forward process}
+    First, we need to choose a \textbf{forward transition}
+    % $p_{k+1|k}(x_{k+1}|x_{k})$ (e.g.\ $\c{N}(\mu_k(x_k), \sigma_k)$
+    $p(x_{t}|x_{t-1})$ % (e.g.\ $\c{N}(\mu_k(x_t), \sigma_t)$)
+    % (e.g.\ Gaussian)
+    % \newline
+    % \begin{equation}\label{eq:forward_markov}
+    %      p(x_{0:N}) = p(x_0) \prod_{k=0}^{N-1} p_{k+1|k}(x_{k+1}|x_{k}).
+    % \end{equation}
+    \begin{equation}\label{eq:forward_markov}
+         p(x_{0:N}) = p(x_0) \prod_{k=1}^{N} p(x_{t}|x_{t-1}).
+    \end{equation}
+    % \textit{Marginal} $ p_{k+1}(x_{k+1}) = \int p_{k+1|k}(x_{k+1}|x_{k}) p_{k}(x_{k}) \rmd x_k$.
+    % %
+    
+    \textit{Example of transition:}
+    % Typically $p_{k+1|k}(x_{k+1}|x_{k}) = \c{N}(\mu_k(x_k), \sigma_k)$.
+    \begin{itemize}
+        % \item \textbf{Ornstein-Uhlenbeck} process: $\rmd \bfX_t = - \bfX_t \rmd t + \sqrt{2} \rmd \bfB_t$.
+        % \item \textbf{Euler-Maruyama} discretisation: $\bfX_{k+1} = \bfX_{k+1} - \gamma \bfX_{k} + \sqrt{2 \gamma} \bfZ_{k+1}$.
+        % \item Update $\bfX_{k+1} = \bfX_{k+1} - \gamma \bfX_{k} + \sqrt{2 \gamma} \bfZ_{k+1}$ with $\bfZ_{k+1} \sim \c{N}(0, \Id)$.
+        % \item Transition kernel: $p_{k+1|k}(x_{k+1}|x_{k}) = \c{N}(x_{k+1}|(1-\gamma)x_{k},2\gamma)$.
+        % \item Converges to $\piinv = \c{N}(0|\Id /(1-\gamma/2))$ with \textit{geometric} rate.
+        \item Set the transition to be $p(\v{x}_t | \v{x}_{t-1}) = \c{N}\del{\v{x}_{t}| \del{1 - \gamma_t} \v{x}_{t-1}, 2\gamma_t \m{I}}$.
+        \item This form lets us sample $p(\v{x}_t | \v{x}_{t-k})$ analytically. 
+        % \begin{equation*}
+        %     p(\v{x}_t | \v{x}_{t-k}) = \c{N}\del{\v{x}_t \middle| \del{1 - \alpha_{t,k}} \v{x}_{t-k},  \alpha_{t,k}\m{I}} \; \text{where} \; \alpha_{t, k} = 1 -\prod_{s=k+1}^t 1 - \beta_s 
+        % \end{equation*}
+        \item If we take $t \to \infty$, $p_t \to \c{N}\del{0, \m{I}}$ geometrically quickly.
+        \item This is important! It means we can approximately sample $p(\v{x}_T)$ for large $T$.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Reversing the forward process}
+
+% For Gaussian forward process, the \textbf{backwards process}, $p(x_{t-1}|x_{t})$, is also (approximately, for sufficiently small steps) Gaussian with intractable mean and closed-form variance, yielding
+%     % \begin{equation}\label{eq:backward_markov}
+%     %     p(x_{0:N}) = p(x_N) \prod_{k=0}^{N-1} p_{k|k+1}(x_{k}|x_{k+1}).
+%     % \end{equation}
+%     \begin{equation}\label{eq:backward_markov}
+%         p(\v{x}_{0:N}) = p(\v{x}_N) \prod_{t=N}^{1} p(\v{x}_{t-1}|\v{x}_{t}), \quad p(\v{x}_{t-1}|\v{x}_{t}) = \c{N}\del{\v{x}_{t-1}\middle| \v{\mu}\del{\v{x}_t, t}, \m{\Sigma}_t}
+%     \end{equation}
+    
+%     But how do we \textbf{train} an approximate mean function ${\v{\mu}_\theta}\del{\v{x}_t, t}$?
+%     \begin{equation*}
+%         \E\sbr{-\log p_\theta(\v{x_0})} \leq \E_q\sbr{- \log \frac{p_\theta(\v{x}_{0:T})}{q(\v{x}_{1:T}|\v{x}_0)}} = \E_q \sbr{ -\log p(\v{x}_T) - \sum_{t \geq 1}\log \frac{p_\theta(\v{x}_{t-1}| \v{x}_{t})}{q(\v{x}_t | \v{x}_{t-1})}}
+%     \end{equation*}
+%     All these terms are computable, and so we could train via Monte Carlo sampling and SGD.
+%
+We now want to be able to \textbf{invert} this transition, so we can sampling the reverse process.
+
+\begin{center}
+    Unfortunately $p(\v{x}_{t-1} | \v{x}_t) = p(\v{x}_{t} | \v{x}_{t-1})p(\v{x}_{t-1})/p(\v{x}_t)$ is intractable!
+\end{center}
+
+\pause
+\textit{But} using some Taylor expansions and approximations, we can show
+\begin{equation*}
+    p(\v{x}_{t-1} | \v{x}_t) \approx C_{\gamma_t} \exp \sbr{ - \frac{\norm{\v{x}_{t-1} - (1 + \gamma_t)\v{x}_{t} - 2 \gamma_t  \hlyellow{\nabla_{\v{x}_{t}} \log p(\v{x}_{t})} }^2}{4 \gamma_t^2}}.
+\end{equation*}
+\pause
+So we have
+\begin{equation*}
+    p(\v{x}_{t-1} | \v{x}_t) \approx \c{N}\del{\v{x}_{t-1} \middle| (1+\gamma_t)\v{x}_{t} + 2 \gamma_t \hlyellow{\nabla_{\v{x}_{t}} \log p(\v{x}_{t})}, 2\gamma_t \m{I}}.
+\end{equation*}
+As $\gamma_t \to 0$, this becomes exact.
+
+% \begin{itemize}
+%     \item  $p_{k|k+1}(x_{k}|x_{k+1}) = p_{k+1|k}(x_{k+1}|x_{k}) p_{k}(x_{k})/ p_{k+1}(x_{k+1})$ is intractable.
+% % \begin{equation}
+%  \item $p_{k|k+1}(x_{k}|x_{k+1})
+% \approx C^{-1}_\gamma \exp \left[ - \tfrac{\|x_k - x_{k+1} - \gamma \left( x_{k+1} + 2 \gamma \nabla \log p_k(x_{k+1}) \right) \|^2}{4 \gamma} \right]$
+% % \end{equation}
+% up to a term of order $\gamma$ in the exponential and $C_\gamma = (4 \pi \gamma)^{-d/2}$.
+%  \item  $p_{k|k+1}(x_{k}|x_{k+1}) \approx \c{N}(x_{k}|x_{k+1}+2\gamma \nabla \log p_k(x_{k+1}), 2\gamma)$.
+% \end{itemize}
+% %
+% \textbf{Sampling backward process}
+
+% $\bfX_{k} = \bfX_{k+1} + \gamma \left[ \bfX_{k+1} + 2 \gamma \nabla \log p_k(\bfX_{k+1}) \right]+ \sqrt{2 \gamma} \bfZ_{k+1}$.
+
+\end{frame}
+
+% \begin{frame}{A more efficient objective}
+% \begin{equation*}
+%     \E_q \sbr{
+%         \underbrace{
+%             D_{KL} \del{q(\v{x}_T | \v{x}_0) \middle| \middle| p(\v{x}_T)}
+%         }_{\hlblue{\scriptstyle L_T}}
+%          + \sum_{t>1} \underbrace{
+%             D_{KL}\del{q(\v{x}_{t-1}| \v{x}_t, \v{x}_0)  \middle| \middle | p_\theta(\v{x}_{t-1} | \v{x}_t)}
+%         }_{\hlred{\scriptstyle L_{t-1}}}
+%         \underbrace{- \log p_\theta(\v{x}_0 | \v{x}_1)}_{\hlorange{\scriptstyle L_0}}
+%     }
+% \end{equation*}
+
+% \begin{itemize}
+%     \item[\hlblue{L_T}] is constant if we fix $q$
+%     \item[\hlorange{L_0}] we can compute directly
+%     \item[\hlred{L_{t-1}}] requires access to $q(\v{x}_{t-1}| \v{x}_t, \v{x}_0)$
+% \end{itemize}
+% Fortunately we can get at this! $q(\v{x}_{t-1}| \v{x}_t, \v{x}_0) = \c{N}\del{\v{x}_{t-1} \middle | \tilde{\v{\mu}}_t\del{\v{x}_t, \v{x}_0}, \tilde{\beta}_t \m{I}}$ with
+% \begin{equation*}
+%     \tilde{\v{\mu}}_t\del{\v{x}_t, \v{x}_0} = \frac{\sqrt{1-\alpha_{t-1}} \beta_t}{\alpha_t}\v{x}_0 + \frac{\sqrt{1-\alpha_t}(\alpha_{t-1})}{\alpha_t}\v{x}_t \; \text{and} \; \tilde{\beta}_t = \frac{\alpha_{t-1}}{\alpha_t}\beta_t
+% \end{equation*}
+% These are all closed form KL divergences!
+% \end{frame}
+
+
+\begin{frame}{Discrete SGMs: Denoising Score Matching \cite{vincent2011connection}}
+% \begin{frame}{Discrete SGMs: Score approximation}
+
+The score $ \hlyellow{\nabla_{\v{x}_t} \log p(\v{x}_t)} $ is unfortunately \textbf{intractable}. By using the identity $p(\v{x}_t) = \int p(\v{x}_t | \v{x}_0) p(\v{x}_0) \rmd \v{x}_0$ we can get~\cite{efron2011tweedie} 
+\begin{equation*}
+% \textstyle{
+    \hlyellow{\nabla_{\v{x}_t} \log p(\v{x}_t)} 
+    = \int \hlorange{\nabla_{\v{x}_t} \log p(\v{x}_t|\v{x}_0)} \hlred{p(\v{x}_0|\v{x}_t)} \rmd \v{x}_0
+    = \underbrace{\E_{p(\v{x}_0 | \v{x}_t)}}_{\text{non tractable}}[\underbrace{\hlorange{\nabla \log p_{t|0}(\v{x}_t|\v{x}_0)}}_{\text{tractable}}].
+% }    
+\end{equation*}
+\pause
+% \vspace{-1em}
+% \begin{itemize}
+%     \item $\nabla \log p_{t|0}(x_t|x_0)$ is tractable.
+%     \item (Backward) conditional expectation is not.
+%     \item $\hlyellow{\nabla \log p_t(\bft_k)} = \PE{\left[\nabla  \log p_{t|0}(\bfX_t|\bfX_0) |\bfX_t \right]}$ is a \textbf{conditional expectation}.
+% \end{itemize}
+$\hlyellow{\nabla \log p_t(\v{x}_t)} = \PE_{\v{x}_0 | \v{x}_t}{\left[\nabla  \log p_{t|0}(\v{x}_t|\v{x}_0) |\v{x}_t \right]}$ is a \textbf{conditional expectation} hence by definition% using properties of the conditional expectation:
+\begin{equation}
+\textstyle{
+    \hlyellow{\nabla \log p_k} 
+    = \arg \min \cbr{ \PE_{\v{x}_k,\v{x}_0} \left[ \| \hlyellow{\mathbf{s}}(\v{x}_k) - \log p_{k|0}(\v{x}_k|\v{x}_0) \|^2 \right] : \hlyellow{\mathbf{s}} \in \rmL^2(p_k)}.
+}    
+\end{equation}
+%
+% \vspace{1.em}
+% To train an approximate score we would want to take the expectation over $\v{x}_t$
+% \begin{align*} 
+%    \theta^* &= \arg\min_\theta \E_{p(\v{x}_t)} \sbr{ \v{s}_\theta(\v{x}_t) -   \E_{p(\v{x}_0 | \v{x}_t)}{\left[\hlorange{\nabla \log p(\v{x}_t|\v{x}_0)} \right]}} \\
+%    &= \arg\min_\theta \E_{p(\v{x}_0) p(\v{x}_t | \v{x}_0)}\sbr{ \v{s}_\theta(\v{x}_t) -  \hlorange{\nabla \log p(\v{x}_t|\v{x}_0)}}
+% \end{align*}
+
+\pause
+We then need to estimate the score over all the steps, so amortise $ \v{s}_\theta(\v{x}_t) \to  \v{s}_\theta(t, \v{x}_t)$ and take a weighted loss over all steps:
+\begin{align*} 
+   % \ell_{\textrm{dsm}}(\hlyellow{s_\theta}, \lambda) =  \E_{p(t)} \sbr{ \lambda(t) \E_{p(\v{x}_0) p(\v{x}_t | \v{x}_0)}\sbr{ \| \v{s}_\theta(t, \v{x}_t) -  \hlorange{\nabla \log p_{t|0}(\v{x}_t|\v{x}_0)}\|^2}}.
+   \ell_{\textrm{dsm}}(\hlyellow{s_\theta}, \lambda) =  \sum_{t=1}^T \sbr{ \lambda(t) \E_{p(\v{x}_0) p(\v{x}_t | \v{x}_0)}\sbr{ \| \v{s}_\theta(t, \v{x}_t) -  \hlorange{\nabla \log p_{t|0}(\v{x}_t|\v{x}_0)}\|^2}}.
+\end{align*}
+
+
+% The expectation can be approximated with \textbf{Monte Carlo}
+% \begin{itemize}
+%     \item over the joint distribution $p(\bfX_k,\bfX_0) = p_0(\bfX_0) p_{k|0}(\bfX_k|\bfX_0)$.
+%     \item Since $p_{k|0}(x_k|x_0)=\c{N}(x_k|m_k x_0, \sigma_k^2)$ with $m_k = (1-\gamma)^k$ and $\sigma_k^2=\tfrac{1-(1-\gamma)^{2k}}{1-\gamma/2}$.
+%     \item $\bfX_k = m_k \bfX_0 + \sigma_k \bfZ_k$ with $\bfZ_k \sim \c{N}(0,\Id)$.
+%     \item $\nabla \log p_{k|0}(\bfX_k|\bfX_0) = -(\bfX_k - m_k \bfX_0) / \sigma_k^2 = -\bfZ_k / \sigma_k$.
+%     \item \textit{Amortise} neural network $\hlyellow{\mathbf{s}_\theta}(k, \bfX_k)$ over $k$.
+% \end{itemize}
+\end{frame}
+
+\begin{frame}{Recap: Discrete SGMs}
+ %
+ \begin{center}
+        \includegraphics[width=\textwidth]{images/ddpm.png}
+    \end{center}
+\begin{itemize} \setbeamertemplate{itemize items}[triangle]
+    \item Choose forward \textbf{Markov kernel} $\Rightarrow$ induces noising \textbf{Markov process} $(\bfX_t)_{t\in[1,\dots,T]}$.
+    \item Aim: Sample from \textbf{time-reverse} process  $(\bfY_t)_{t\in[1,\dots,T]} = (\bfX_{T-t})_{t\in[1,\dots,T]}$.
+    \begin{itemize}  \setbeamertemplate{itemize items}[circle]
+    \item Requires $\Rightarrow$ approximating \textbf{backward Markov kernel}.
+    \item Its variance is approximately the same as the forward kernel's.
+    \item Its mean depends on the forward kernel's mean and the \textbf{Stein score}.
+    \item The score is parametrised and trained by \textbf{learning to `denoise'} samples.
+    \item Generate samples via \textbf{ancestral sampling} on the backward process.
+    \end{itemize}
+\end{itemize}
+%
+\end{frame}
+

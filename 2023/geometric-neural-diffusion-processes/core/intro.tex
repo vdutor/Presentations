@@ -1,0 +1,173 @@
+\begin{frame}{About}
+\begin{center}
+\begin{minipage}[c]{0.9\linewidth}
+\begin{enumerate}
+    \item[2015.] Master in Engineering at Ghent University (Belgium)
+    \item[2017.] Research Scientist at Secondmind.io (formerly PROWLER.io)
+    \item[2020.] PhD student at University of Cambridge with Prof Zoubin Ghahramani
+    \item[2022.] Research Internship at DeepMind
+    \item[2023.] Submitting thesis on \emph{Generative Modelling in Function Space}
+\end{enumerate}
+\end{minipage}
+\end{center}
+% Claim to fame: Played football with Kevin de Bruyne in High Scool
+\end{frame}
+
+\begin{frame}{Outline}
+\begin{enumerate}
+    \item A brief introduction to generative modelling
+    \item Background on continuous diffusion models
+    \item Diffusion Processes on Functions
+    \item Incorporating geometry and invariances
+    \item Conditional Sampling
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Papers of Reference and Collaborators}
+
+Neural Diffusion Processes. ICML 2023.
+
+\begin{center}
+\parbox{2.75cm}{%
+\begin{tikzpicture}
+    \clip (0,0) circle (.85);
+    \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/vd309b}};
+\end{tikzpicture}
+\centering \\ \footnotesize Vincent \\ Dutordoir
+}%
+\hspace{-.85cm}      
+\parbox{2.75cm}{%
+    \begin{tikzpicture}
+        \clip (0,0) circle (.85);
+        \node at (0,0) {\includegraphics[width=.75\linewidth]{images/faces/alan}};
+    \end{tikzpicture}
+    \centering \\ \footnotesize Alan \\ Saul
+  }%
+  \hspace{-.85cm}
+  \parbox{2.75cm}{%
+  \begin{tikzpicture}
+     \clip (0,0) circle (.85);
+     \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/zg201.png}};
+ \end{tikzpicture}
+ \centering \\ \footnotesize  Zoubin \\ Ghahramani
+ }%
+ \hspace{-.85cm}      
+ \parbox{2.75cm}{%
+ \begin{tikzpicture}
+     \clip (0,0) circle (.85);
+     \node at (0,0) {\includegraphics[width=.75\linewidth]{images/faces/fergus} };
+ \end{tikzpicture}
+ \centering \\ \footnotesize Fergus \\ Simpson
+}
+\end{center}
+
+Geometric Neural Diffusion Processes. Under submission.
+
+\begin{center}
+\parbox{2.75cm}{%
+    \begin{tikzpicture}
+        \clip (0,0) circle (.85);
+        \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/mathieu2}};
+    \end{tikzpicture}
+    \centering \\ \footnotesize \'Emile \\ Mathieu\textsuperscript{*}
+  }%
+  \hspace{-.85cm}
+  \parbox{2.75cm}{%
+    \begin{tikzpicture}
+        \clip (0,0) circle (.85);
+        \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/vd309b}};
+    \end{tikzpicture}
+    \centering \\ \footnotesize Vincent \\ Dutordoir\textsuperscript{*}
+  }%
+  \hspace{-.85cm}      
+  \parbox{2.75cm}{%
+  \begin{tikzpicture}
+     \clip (0,0) circle (.85);
+     \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/hutchinson}};
+ \end{tikzpicture}
+ \centering \\ \footnotesize  Michael \\ Hutchinson\textsuperscript{*}
+ }%
+ \hspace{-.85cm}      
+ \parbox{2.75cm}{%
+ \begin{tikzpicture}
+     \clip (0,0) circle (.85);
+     \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/debortoli} };
+ \end{tikzpicture}
+ \centering \\ \footnotesize Valentin \\ De Bortoli
+}%
+\hspace{-.85cm}
+\parbox{2.75cm}{%
+\begin{tikzpicture}
+  \clip (0,0) circle (.85);
+  \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/teh}};
+\end{tikzpicture}
+\centering \\ \footnotesize  Yee Whye \\  Teh
+}%
+\hspace{-.85cm}      
+\parbox{2.75cm}{%
+\begin{tikzpicture}
+  \clip (0,0) circle (.85);
+  \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/ret26}};          
+\end{tikzpicture}
+\centering \\ \footnotesize  Richard E. \\ Turner
+}%  
+\end{center}
+\end{frame}
+
+% \begin{frame}{Outline}
+% \begin{enumerate}
+%     \item Very brief intro to generative modelling
+%     \item Background on continuous diffusion models
+%     \item Extension to function space: neural diffusion processes
+%     \item Modelling feature fields: geometric neural diffusion processes
+% \end{enumerate}
+% \vspace{2em}
+% \centering
+% \parbox{2.75cm}{%
+%     \begin{tikzpicture}
+%         \clip (0,0) circle (.85);
+%         \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/mathieu2}};
+%     \end{tikzpicture}
+%     \centering \\ \footnotesize \'Emile \\ Mathieu
+%   }%
+% %   \hspace{-.85cm}
+% %   \parbox{2.75cm}{%
+% %     \begin{tikzpicture}
+% %         \clip (0,0) circle (.85);
+% %         \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/vd309b}};
+% %     \end{tikzpicture}
+% %     \centering \\ \footnotesize Vincent \\ Dutordoir
+% %   }%
+%   \hspace{-.85cm}      
+%   \parbox{2.75cm}{%
+%   \begin{tikzpicture}
+%      \clip (0,0) circle (.85);
+%      \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/hutchinson}};
+%  \end{tikzpicture}
+%  \centering \\ \footnotesize  Michael \\ Hutchinson
+%  }%
+%  \hspace{-.85cm}      
+%  \parbox{2.75cm}{%
+%  \begin{tikzpicture}
+%      \clip (0,0) circle (.85);
+%      \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/debortoli} };
+%  \end{tikzpicture}
+%  \centering \\ \footnotesize Valentin \\ De Bortoli
+% }%
+% \hspace{-.85cm}
+% \parbox{2.75cm}{%
+% \begin{tikzpicture}
+%   \clip (0,0) circle (.85);
+%   \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/teh}};
+% \end{tikzpicture}
+% \centering \\ \footnotesize  Yee Whye \\  Teh
+% }%
+% \hspace{-.85cm}      
+% \parbox{2.75cm}{%
+% \begin{tikzpicture}
+%   \clip (0,0) circle (.85);
+%   \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/ret26}};          
+% \end{tikzpicture}
+% \centering \\ \footnotesize  Richard E. \\ Turner
+% }%  
+% \end{frame}

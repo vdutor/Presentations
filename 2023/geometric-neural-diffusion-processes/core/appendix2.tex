@@ -1,0 +1,39 @@
+\begin{frame}{Steerable feature fields}
+    \vspace{-0.3em}
+    % functions of the form  $f : \X \rightarrow \R^d$ such that a group $G$ acts on $\X$ and $\rset^d$.
+    A \textbf{feature field} is a tuple $(f, \hlgreen{\rho})$ with $f : \X \rightarrow \rset^d$ a mapping between $\x \in \X$ to some feature $f(\x)$ with representation $\hlgreen{\rho: G \rightarrow \mathrm{GL}(\R^d)}$~\cite{scott1996linear}.
+    % \pause
+    \\
+    The action of $G = \E(d) = \mathrm{T}(d) \rtimes \mathrm{O}(d)$ on the feature field $f$  given by 
+    \begin{align}
+    g \cdot f(\x) = (uh) \cdot f(\x) \triangleq \hlgreen{\rho(h)
+    } f\left(h^{-1} (\x - u)\right)
+    \end{align}
+    %
+    % \pause
+    Typical examples of feature fields include:
+    \vspace{-0.5em}
+    \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+        \item \textbf{Scalar fields} $\hlgreen{\rho_{\mathrm{triv}}(h) \triangleq 1}$ 
+        % transforming as $g \cdot f(\x) = f\left(g^{-1} \x\right)$ 
+        e.g.\ temperature or potential fields.
+        \item \textbf{Vectors fields} $\hlgreen{\rho_{\mathrm{Id}}(h) \triangleq h}$ 
+        % transforming as $g \cdot f(\x) = h f\left(g^{-1} \x\right)$, 
+        e.g.\ wind or force fields.
+        % \item \textbf{Rank-2 tensors} $\hlgreen{\rho(h) = h \otimes h}$, $g \cdot f(\x) = \hlgreen{(h \otimes h)} \mathrm{vec}\left(f\left(g^{-1} \x\right)\right) = \hlgreen{h} f\left(g^{-1} \x\right) \hlgreen{h^\top}$.
+    \end{itemize}
+        
+    % \textcolor{solidred}{add sclar field example}
+    \vspace{-.8em}
+    \begin{figure}%{r}{0.4 \textwidth}
+    \centering
+    \includegraphics[height=0.3\textheight]{images/geomndp/2d/steerable_demo.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{1D regression: Kernel ablation}
+\begin{center}
+    \includegraphics[width=.9\textwidth]{images/geomndp/1d/ablation.png}
+    \captionof{figure}{Ablation study targeting different limiting kernels and score parametrisations.}
+\end{center}    
+\end{frame}

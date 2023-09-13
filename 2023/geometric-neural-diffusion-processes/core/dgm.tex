@@ -1,0 +1,203 @@
+\section{Deep generative modelling}
+
+
+
+% \begin{frame}{Motivating examples}
+% Super-resolution
+
+% \includegraphics[width=\linewidth]{images/superres.png}
+% % \begin{enumerate}
+% %     \item 
+% % \end{enumerate}
+    
+% \end{frame}
+
+\begin{frame}{Motivating examples}
+\begin{enumerate}
+    \item[] Molecular conformation generation~\cite{xu2022GeoDiff}
+    \item[] Motif-Scaffolding~\cite{trippe2022Diffusion}
+\end{enumerate}
+
+\begin{center}
+    \vspace{-.5em}
+    % \includegraphics[angle=90,origin=c,width=0.5\linewidth]{images/protein_binding.png}
+    \includegraphics[width=\linewidth]{images/protein.png}
+    \vspace{.5em}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Motivating examples (Cont'd)}
+Probabilistic near future (nowcasting) prediction of precipitation~\cite{ravuri2021Skilful}
+\begin{center}
+\includegraphics[width=\linewidth]{images/rain_gen_models.png}
+% TODO(Vincent ): add back
+% \animategraphics[autoplay,loop,width=0.9\textwidth]{10}{images/rain/rain-}{0}{48}
+\end{center}
+\end{frame}
+
+
+
+% \includegraphics[width=\linewidth]{images/rain_gen_models.png}
+% % \begin{enumerate}
+% %     \item 
+% % \end{enumerate}
+    
+% \end{frame}
+
+
+\begin{frame}{What is generative modelling?}
+
+Given $x_1, x_2, \ldots, x_n \sim p(x)$
+
+How to model the (unknown) density $p(x)$ and sample from it?
+
+\includegraphics[width=\linewidth]{images/generative_modelling_openai.png}
+
+\end{frame}
+
+% \begin{frame}{What is generative modelling?}
+%     Slide in the style of Valentin, although EBMs do not fit this!
+% \end{frame}
+
+% \begin{frame}{Motivating examples}
+% Data Augmentation
+
+% \centering \includegraphics[width=0.8\linewidth]{images/data_augmentation_gen.png}
+% % \begin{enumerate}
+% %     \item 
+% % \end{enumerate}
+    
+% \end{frame}
+
+% \begin{frame}{What is generative modelling?}
+% % Generically, it is the parametrisation of a density. 
+% % We may have samples, or an normalised likelihood.
+% % We assume access to samples for training purposes (vs. unnormalised density for \emph{sampling}).
+% % We might want to draw more samples, or evaluate the likelihood.
+% \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+%     \item Given a dataset of samples
+%     \item Obtain new samples
+%     \item Evaluate likelihood of samples
+% \end{itemize}
+% \vspace{1em}
+% \begin{tikzpicture}
+%     \node[inner sep=0pt] (ref) at (-5,0)
+%         {\includegraphics[width=0.25\textwidth]{images/ref_dist.png}};
+%     \node[inner sep=0pt] (gears) at (0,0)
+%         {\includegraphics[width=0.2\textwidth]{images/gears.jpg}};
+%     \node[inner sep=0pt] (map) at (5,0)
+%         {\includegraphics[width=0.25\textwidth]{images/map_dist.png}};
+        
+%     \draw[->, ultra thick] (ref.east) -- (gears.west);
+%     \draw[->, ultra thick] (gears.east) -- (map.west);
+    
+%     \node[above=0cm] at (ref.north) {\textbf{Simple distribution}};
+%     \node[above=0cm] at (map.north) {\textbf{Unknown complex distribution}};
+%     \node[below=0cm] at (ref.south) {\textbf{We can sample this}};
+%     \node[below=0cm] at (map.south) {\textbf{We have samples from this}};
+%     \node[above=0cm] at (gears.north) {\textbf{Some transformation}};
+% \end{tikzpicture}
+% Note fitting a Gaussian distribution to samples is \textit{technically} generative modelling, albeit a very simple version.
+% \end{frame}
+
+\begin{frame}{Deep generative models}
+    
+    \begin{center}
+        \vspace{-.5em}
+        \includegraphics[width=0.9\linewidth]{images/dgms.png}
+        \captionof{figure}{\cite{albergo2022Building}}
+        \vspace{.5em}
+    \end{center}
+   
+\end{frame}
+    
+
+
+% \begin{frame}{A narrative of generative model development}
+% \begin{frame}{Deep generative models}
+
+%     There are a number of existing generative model types:
+    
+%     \begin{columns}[t]
+%     \begin{column}[t]{0.5\textwidth}
+    
+%     \begin{center}
+%         \textbf{Likelihood based models}
+%     \end{center}
+%     \begin{itemize}
+%         \item VAEs
+%         \item Normalizing flows
+%         \item Autoregressive models
+%     \end{itemize}
+    
+%     \end{column}
+%     \begin{column}[t]{0.5\textwidth}
+    
+%     \begin{center}
+%         \textbf{Implicit models}
+%     \end{center}
+%     \begin{itemize}
+%         \item Energy based models
+%         \item GANs
+%     \end{itemize}
+    
+%     \end{column}
+%     \end{columns}
+%     \vspace{1.5em}
+%     \begin{columns}[t]
+%     \begin{column}[t]{0.5\textwidth}
+%     These models have quite restricted forms, and training via ELBOs can have difficulties.
+%     \end{column}
+%     \begin{column}[t]{0.5\textwidth}
+%     % The adversarial losses of these models can be very tricky to train, and we have no access to likelihoods from the models.
+%     Cannot evaluate likelihood.
+%     GANs are tricky to train, whilst EBMs are slow to train as they require MCMC.
+%     \end{column}
+%     \end{columns}
+% \end{frame}
+    
+
+% \begin{frame}{A narrative of generative model development}
+
+% \begin{frame}{Deep generative models}
+% \begin{table}[]
+%     \centering
+%     \begin{tabular}{lccc}
+%     \toprule
+%     & Explicit & Semi-implicit & Implicit \\
+%     \midrule
+%     Density & $p_{\theta}(x)$ & $p_{\theta}(x, z) = p_{\theta}(x|z)p_{\theta}(z)$ & No access \\
+%     \midrule
+%     Sampling & Efficient & Efficient & Efficient \\
+%     %\midrule
+%     %Reversibility & Yes & Approximate & No \\
+%     \midrule 
+%     Flexibility & Restricted & Less restricted & Flexible \\
+%     \midrule
+%     Example & ?? & ?? & ?? \\
+%     \bottomrule
+%     \end{tabular}%
+%     \label{tab:genmodels}
+% \end{table}
+% \end{frame}
+
+% \begin{frame}{Likelihood-based models}
+% \vspace{1cm}
+% \includegraphics[width=\linewidth]{images/likelihood_based_models.png}
+% \begin{itemize}
+%     \item Restricted
+%     \item Doesn't reach state-of-the-art quality
+% \end{itemize}
+% \end{frame}
+
+% \begin{frame}{Implicit models}
+% \centering
+% \includegraphics[width=0.8\linewidth]{images/implicit_models.png}
+% \begin{itemize}
+%     \item SOTA results
+%     \item Flexible
+%     \item Hard to train
+%     \item Mode collapse is a problem
+% \end{itemize}
+% \end{frame}

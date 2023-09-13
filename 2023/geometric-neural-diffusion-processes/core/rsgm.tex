@@ -1,0 +1,892 @@
+% \section{Riemannian score-based generative models}
+% \section{Score-based generative models on Riemannian manifolds}
+
+% \begin{frame}{Riemannian Score-Based Generative Modeling}
+
+%     \parbox{5cm}{
+%        \begin{tikzpicture}
+%          \node at (0,0) {\includegraphics[width=.68\linewidth]{images/simple} };
+%          \node at (10,0) {\includegraphics[width=.68\linewidth]{images/ref} };
+%          \node at (5,0) {\includegraphics[width=.68\linewidth]{images/log_prob} };
+%        \end{tikzpicture}
+%      }
+%     % \begin{figure}
+%     %     \centering
+%     %     \includegraphics[width=.20\linewidth]{images/simple}
+%     %     \hfill
+%     %     \includegraphics[width=.20\linewidth]{images/red}
+%     %     \hfill
+%     %     \includegraphics[width=.20\linewidth]{images/log_prob}
+%         % \caption{Caption}
+%         % \label{fig:my_label}
+%     % \end{figure}
+%                \\
+%                ~\\
+%                ~\\
+%            \centering
+%            \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%                \clip (0,0) circle (.85);
+%                \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/debortoli} };
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize Valentin \\ De Bortoli
+%          }%
+%          \hspace{-.85cm}
+%        \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%                \clip (0,0) circle (.85);
+%                \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/mathieu2}};
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize \'Emile \\ Mathieu
+%          }%
+%          \hspace{-.85cm}
+%        \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%                \clip (0,0) circle (.85);
+%                \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/hutchinson}};
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize  Michael \\ Hutchinson
+%          }%
+%          \hspace{-.85cm}      
+%          \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%                \clip (0,0) circle (.85);
+%                \node at (0,0) {\includegraphics[width=.62\linewidth]{images/faces/thornton}};
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize James \\ Thornton
+%          }%
+%          \hspace{-.85cm}      
+%          \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%              \clip (0,0) circle (.85);
+%              \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/teh}};
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize  Yee Whye \\  Teh
+%          }%
+%          \hspace{-.85cm}      
+%          \parbox{2.75cm}{%
+%            \begin{tikzpicture}
+%              \clip (0,0) circle (.85);
+%              \node at (0,-0.2) {\includegraphics[width=.62\linewidth]{images/faces/doucet}};          
+%            \end{tikzpicture}
+%            \centering \\ \footnotesize  Arnaud \\ Doucet
+%        }%  
+   
+%    \end{frame}
+   
+   % \begin{frame}{Motivation}
+   
+   % Manifold-valued data:
+   % \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+   %     \item intrinsic coordinates of molecules: torsional angles $\mathbb{T}^d$ \cite{jing2022Torsional}
+   %     \item Amino-acid or protein-ligand binding: $\mathrm{SE}_3(\rset)$ \cite{corso2022DiffDock}
+   %     \item Hurricane modelling: $\mathbb{S}^2$
+   %     \item Graph embedding in hyperbolic $\mathbb{H}^d$ space, cell development 
+   %     % \item $\mathrm{SU}_n(\mathbb{C})$?
+   %     \item Robotics: $\mathbb{T}^d$ and $\mathrm{SO}_3(\rset)$
+   % \end{itemize}
+   % % \todo[inline]{Refine examples + Illustration?}
+   
+   % \end{frame}
+
+   
+   \section{Riemannian diffusion models}
+   
+   \begin{frame}{Motivation}
+   
+   \begin{table}[]
+       \centering
+       \begin{tabular}{ccc}
+           \includegraphics[width=0.2\textwidth]{images/molecule.jpg} & \includegraphics[width=0.2\textwidth]{images/weather.png} & \includegraphics[width=0.2\textwidth]{images/protein_binding.png} \\
+           Molecular Angles & Weather Modelling & Protein Binding\\
+           \includegraphics[width=0.2\textwidth]{images/robot.jpg} & \includegraphics[width=0.2\textwidth]{images/liegroups.png} & \includegraphics[width=0.2\textwidth]{images/tree.png}\\
+           Robotics & Lie groups & Tree embedding
+       \end{tabular}
+   \end{table}
+   
+   \end{frame}
+   
+   
+   
+   \begin{frame}{What are Riemannian manifolds? A smooth manifold $\M$}
+   
+   A \textbf{Riemannian manifold} is a tuple $(\M, \mathfrak{g})$.
+   
+   \begin{figure}
+       \centering
+       \begin{subfigure}[t]{0.45\textwidth}
+           \includegraphics[width=\textwidth,clip]{images/PgvaT.png}
+           % \caption{A chart on $\mathbb{S}^2$.}
+       \end{subfigure}
+       % \hfill
+       % \hspace{2em}
+       % \begin{subfigure}[t]{0.30\textwidth}
+       %     \includegraphics[width=\textwidth, trim={4.5em 4.5em 4.0em 4.0em},clip]{images/grw.png}
+       %     \caption{Many steps yield an approximate Brownian motion trajectory.}
+       % \end{subfigure}
+       % \label{fig:grw}
+   \end{figure}
+   
+   \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+       \item A smooth \textbf{manifold} $\M$ is locally `similar' (homeomorphic) to $\rset^d$.
+        \begin{itemize} \setbeamertemplate{itemize items}[circle]
+           \item Exists homeomorphic \textit{coordinate charts} $(U, \phi)$ s.t.\ $\phi: U \subset \M \to V \subset \rset^d$.
+           \item Charts are suitably compatible (i.e.\ compositions are differentiable).
+       \end{itemize}
+   \end{itemize}
+   
+   \end{frame}
+   
+   
+   \begin{frame}{What are Riemannian manifolds? A metric ${g}$}
+   A (Riemannian) \textbf{metric} ${g}(x)$ defines a (positive-definite) inner product on $\mathrm{T}\M_x$.
+   \begin{figure}
+       \vspace{-2.5em}
+       \centering
+        \begin{subfigure}[t]{0.2\textwidth}
+           \includegraphics[width=\textwidth, trim={0.em -1.em 0 0},clip]{images/s2_geodesic.png}
+           % \caption{Many steps yield an approximate Brownian motion trajectory.}
+       \end{subfigure}
+       % \hfill
+       \hspace{2em}
+       \begin{subfigure}[t]{0.25\textwidth}
+           \includegraphics[width=\textwidth,angle=45,origin=c, trim={4.5em 4.5em 1.em 2.0em},clip]{images/grw_step.png}
+           % \caption{Exponential map on $\mathbb{S}^2$.}
+       \end{subfigure}
+       \vspace{-3.5em}
+   \end{figure}
+   \begin{center}
+       $\langle u, v \rangle_x = u^\top g(x) v$, and  ${g}(x)$ varies smoothly with $x$.
+   \end{center}
+   \begin{itemize} \setbeamertemplate{itemize items}[circle]
+       \item Gradient $\nabla^\M f(x) = g(x)^{-1} \nabla f(x)$ and divergence $\dive^\M$.
+       % \item Divergence $\dive^\M$.
+       \item Geodesic distance: $d^\M(x,y) = \inf \{L(\gamma): \mathrm{C}^1 \text{ curve } \gamma \ s.t.\ \gamma(0)=x \text{ and } \gamma(1)=y\}$.
+       \item Geodesic: argmin $\gamma(t)$ of geodesic distance.
+       \item Exponential map: $\exp_x(tv) = \gamma(t)$ with $\gamma(0)=x$ and $\gamma'(0)=v$.
+   \end{itemize}
+   \end{frame}
+   
+   
+   
+   \begin{frame}{What needs changing on manifolds?}
+   
+   \begin{enumerate}
+       \item Suitable SDEs on \textbf{manifolds} $\Rightarrow$ %Stratanovitch integrals.
+       Manifold-valued Brownian motion.
+       \item A time-reversal formula for these SDEs $\Rightarrow$ A novel extension of \textcite{cattiaux2021time}%[Theorem 4.9].
+       \pause
+       \item An approximation of these SDEs $\Rightarrow$ \textbf{Geodesic} random walks.
+       \pause
+       \item Score matching losses that work on manifolds $\Rightarrow$
+       % Generalise known losses to the manifold case.
+       Generalise known losses and efficient approximations.
+   \end{enumerate}
+   
+   % You will see a theme emerge! Either no or very small changes occur to what we have seen already, at the cost of much more laborious maths...
+       
+   \end{frame}
+   
+   
+   \begin{frame}{Noising processes on manifolds}
+   
+   \textbf{Stochastic differential equation} (SDE):
+   \begin{equation*}
+     \label{eq:sde}
+       \rmd \bfX_t = \hlblue{b(t, \bfX_t)} \rmd t + \hlred{\sigma(t, \bfX_t)} \rmd \bfB_t\hlgreen{^\c{M}}.
+   \end{equation*}
+   \pause
+   %
+   \textbf{Langevin dynamics}:
+   \begin{equation*}
+     \label{eq:langevin}
+   %  \rmd \bfX_t = b(t, \bfX_t) \rmd t + \sigma(t, \bfX_t) \sigma^\top (t, \bfX_t) \rmd \bfB_t^\M = - \tfrac{1}{2}~\nabla_{\bfX_t} U(\bfX_t) \rmd t + \rmd \bfB_t^\M,
+    \rmd \bfX_t = \hlblue{-\nabla_{\bfX_t} U(\bfX_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t\hlgreen{^\c{M}}
+   \end{equation*}
+   admits \textbf{invariant} density: $\rmd \piinv/ \rmd \textrm{Vol}_\M(x) \propto \rme^{-U(x)}$ \parencite[Section 2.4]{durmus2016high}.
+   \pause
+   
+   What is this $\rmd \bfB_t\hlgreen{^\c{M}}$ thing?
+   \vspace{-0.5em}
+   \begin{columns}
+   \begin{column}{0.5\textwidth}
+       \begin{center}
+          \textbf{Intrinsic view}
+       \end{center}
+       \vspace{-0.7em}
+      \begin{itemize}
+          % \item The solution to the \textit{heat equation}
+          % \item Laplace operator $\Delta$ \Rightarrow Laplace-Bochner Operator $\Delta_\M$
+          \item Laplace operator $\Delta \Rightarrow$ Laplace-Beltrami Operator $\Delta_\M$
+          \item The solution to the \textit{heat equation} $\tfrac{\partial p_t}{\partial t} = \Delta_\M p_t$.
+      \end{itemize}
+   \end{column}
+   \pause
+   \begin{column}{0.5\textwidth}  %%<--- here
+       \begin{center}
+           \textbf{Extrinsic view}
+       \end{center}
+       \vspace{-0.7em}
+       \begin{itemize}
+           \item Embed the manifold in $\R^{p>d}$
+           \item Projecting the $\R^p$ BM onto the manifold
+       \end{itemize}
+   \end{column}
+   \end{columns}
+   
+   % If $\M = \rset^d$ and $\gamma=1$ $\Rightarrow$
+   % $\hlblue{b(t, x)} = \exp^{-1}_{x}(0) = -x$ 
+   % $\Leftrightarrow$ \textbf{Ornstein-Uhlenbeck}.
+   
+   \end{frame}
+   
+   \begin{frame}{Invariant densities}
+   Now we have SDEs on manifolds sorted, what densities can we target?
+   
+   \begin{itemize}  \setbeamertemplate{itemize items}[triangle]
+       \item If $\M = \rset^d \Rightarrow$ \textbf{Gaussian} distribution $\mathcal{M}(0, \sigma^2 \Id)$:
+   \end{itemize}
+   \vspace{-\topsep}
+   \begin{itemize}
+       \item $U(x) = \|x \|^2/(2 \sigma^2)$ $\Rightarrow$ $\hlblue{b(t, x)}  = -x / \sigma^2$.
+   \end{itemize}
+   \pause
+   
+   \begin{itemize}  \setbeamertemplate{itemize items}[triangle]
+       \item Generalisations of the \textbf{Gaussian} distribution:
+   \end{itemize}
+   \vspace{-\topsep}
+   \begin{itemize}
+       \item $U(x) = d_\M(x, \mu)^2/(2 \gamma^2)$ $\Rightarrow$ $\hlblue{b(t, x)}  = -\exp^{-1}_x(\mu) / \gamma^2$ (\textit{Riemannian} normal).
+       \item $U(x) = d_\M(x, \mu)^2/(2 \gamma^2) + \log |D \exp^{-1}_{\mu}(x)|$ (\textit{Exp-wrapped} normal).
+       % \item $U(x) = \text{constant}$ $\Rightarrow$ $\hlblue{b(t, x) = \mathbf{0}}$ (probability measure only if compact)
+   \end{itemize}
+   \pause
+   
+   \begin{itemize}  \setbeamertemplate{itemize items}[triangle]
+       \item If the manifold is \textbf{compact}:
+   \end{itemize}
+   \vspace{-\topsep}
+   \begin{itemize}
+       \item Same as above.
+       \item $U(x) = \text{constant}$ $\Rightarrow$ $\hlblue{b(t, x) = \mathbf{0}}$ $\Leftrightarrow$ $\rmd \bfX_t = \rmd \bfB_t^\M.$
+   \end{itemize}
+   \end{frame}
+   
+   \begin{frame}{Time reversal process}
+   
+   \begin{theorem}{Time-reversal diffusion}{thm:time-reversal}
+     \label{thm:time_reversal_manifold}
+   %   Let $T \geq 0$ and $(\bfB_t^\M)_{t \geq 0}$ be a Brownian motion on $\M$ such
+   %   that $\bfB_0^\M$ has distribution the volume form $\piinv$.
+   % %   \footnote{Note that
+   %     % in the case of a non-compact manifold $\piinv$ is only a measure and not a
+   %     % probability measure.}.
+   %     % Let $(\bfX_t)_{t \in \sbr{0,T}}$ be associated
+   % %   with the SDE $\rmd \bfX_t = b(\bfX_t) \rmd t + \rmd \bfB_t^\M$. 
+   %   Let $(\bfY_t)_{t \in \sbr{0,T}} = (\bfX_{T-t})_{t \in \ccint{0,T}}$ and assume
+   %   that $\KLLigne{\Pbb}{\Qbb} < +\infty$, where $\Qbb$ is the distribution of
+   %   $(\bfB_t^\M)_{t \in \sbr{0,T}}$ and $\Pbb $ the distribution of
+   %   $(\bfX_t)_{t \in \sbr{0,T}}$. In addition, assume that
+   %   $\Pbb_t=\mathcal{L}(\bfX_t)$, the distribution of $\bfX_t$, admits a smooth
+   %   positive density $p_t$ w.r.t.\ $\piinv$ for any $t \in \sbr{0,T}$. Then,
+   %   $(\bfY_t)_{t \in \sbr{0,T}}$ is associated with the SDE
+   
+       % Assume \rref{assum:manifold}. 
+       % Let $T \geq 0$ and $(\bfB_t^\M)_{t \geq 0}$ be a Brownian motion on $\M$ such
+       % that $\bfB_0^\M$ has distribution $\piinv$.
+       Let $(\bfX_t)_{t \in \ccint{0,T}}$ associated with the SDE
+       $\rmd \bfX_t = \hlblue{b(t, \bfX_t)} \rmd t + \hlred{\sigma(t)} \rmd \bfB_t^\M$
+       and $(\bfY_t)_{t \in \ccint{0,T}} = (\bfX_{T-t})_{t \in \ccint{0,T}}$ the time-reversal.
+       %  and assume that $\KLLigne{\Pbb}{\Qbb} < +\infty$, where
+       % $\Qbb$ is the distribution of
+       % $(\bfB_t^\M)_{t \in \ccint{0,T}}$ and $\Pbb $  the distribution of
+       % $(\bfX_t)_{t \in \ccint{0,T}}$.
+       % In addition, assume that $\Pbb_t=\mathcal{L}(\bfX_t)$, the distribution of $\bfX_t$, admits a smooth positive density $p_t$ w.r.t.\
+       % $\piinv$ for any $t \in \ccint{0,T}$.
+       Under mild assumptions on $p_0$ and on $p_t$ the density of $\Pbb_t=\mathcal{L}(\bfX_t)$, 
+       % the probability distribution of $\bfX_t$, 
+       then 
+       $(\bfY_t)_{t \in \ccint{0,T}}$ is associated with
+     \begin{equation}
+       \label{eq:time_reversal_manifold}
+     \rmd \bfY_t = \cbr{\hlblue{-b(T-t, \bfY_t)} + \hlred{\sigma(T-t)}^2 \hlyellow{\nabla \log p_{T-t}(\bfY_t)}} \rmd t + \hlred{\sigma(T-t)} \rmd \bfB_t^\M. 
+     \end{equation}
+   \end{theorem}
+   This is an extension of \textcite[][Theorem 4.9]{cattiaux2021time}.
+   \pause
+   
+   \vspace{.6em}
+   Time reversal of \textbf{Langevin dynamics}:
+   \begin{equation}
+     \label{eq:langevin_reversal}
+    \rmd \bfY_t = \cbr{\hlblue{\nabla_{\bfX_t} U(\bfX_t)} + 2~\hlyellow{\nabla \log p_{T-t}(\bfY_t)}} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t^\M.
+   \end{equation}
+   
+   \end{frame}
+   
+   
+   
+   \begin{frame}{Discretising SDEs}
+   
+   \begin{algorithm}[H]
+   \begin{algorithmic}[1]
+           \small
+           % \Require $T, N, X_0^\gamma, b, \sigma, \mathrm{P}$
+           \Require $T, N, \gamma = T / N, X_0^\gamma, \hlblue{b}, \hlred{\sigma}$
+           % \State $\gamma = T / N$ \Comment Step-size
+           \For{$k \in \{0, \dots, N-1\}$}
+           \State $Z_{k+1} \sim \mathrm{N}(0, \Id)$ \Comment Sample a Gaussian in the tangent space of $X_{k}^\gamma$
+           \State $W_{k+1} = \gamma \hlblue{b(k \gamma, X_k^\gamma)} + \sqrt{\gamma} \hlred{\sigma(k \gamma, X_k^\gamma)} Z_{k+1}$ \Comment Euler step on tangent space  % \Comment Compute Euler--Maruyama step on tangent space 
+           \State $X_{k+1}^\gamma = \hlgreen{\exp_{X_k^\gamma}}[W_{k+1}]$ \Comment Move along the geodesic defined by $W_{k+1}$ and $X_{k}^\gamma$ on $\M$
+           \EndFor
+           \State {\bfseries return} $\{ X_k^\gamma\}_{k=0}^{N}$
+   \end{algorithmic}
+   \caption{\small  GRW (Geodesic Random Walk)}
+   \label{alg:grw}
+   \end{algorithm}
+   \vspace{-4.5em}
+   
+   \begin{figure}
+       \centering
+       \begin{subfigure}[t]{0.30\textwidth}
+           \includegraphics[width=\textwidth,angle=45,origin=c, trim={4.5em 4.5em 1.em 2.0em},clip]{images/grw_step.png}
+           \caption{A single step of a Geodesic Random Walk.}
+       \end{subfigure}
+       % \hfill
+       \hspace{2em}
+       \begin{subfigure}[t]{0.30\textwidth}
+           \includegraphics[width=\textwidth, trim={4.5em 4.5em 4.0em 4.0em},clip]{images/grw.png}
+           \caption{Many steps yield an approximate Brownian motion trajectory.}
+       \end{subfigure}
+       % \hfill
+       %     \begin{subfigure}[t]{0.48\textwidth}
+       %     \includegraphics[width=\textwidth, trim={2.5em 2.5em 2.5em 2.5em},clip]{images/sigma_0.51.png}
+       %     \caption{The density of a single step of Gaussian Random Walk [Left] and the Brownian motion density [Right] agree well for small time steps.}
+       % \end{subfigure}
+       % \caption{Geodesic Random Walks can be used to approximate Brownian motion and more generally SDEs on manifolds. (a) At each step, tangential noise is sampled (red), which is added the drift term (not pictured). This tangent vector is then pushed through the exponential map to produce a geodesics step on the manifold (blue).
+       % (b) Iterating this procedure yield approximate sample paths from the process.
+       % }
+       \label{fig:grw}
+   \end{figure}
+   \end{frame}
+   
+   % \begin{frame}{Noising processes on manifolds (Cont'd)}
+   
+   
+   % \pause
+   
+   % % For most cases, cannot samples exactly $\bfX_t|\bfX_0$.
+   % Sampling $\bfX_t|\bfX_0$:
+   % \begin{itemize}
+   %     \item Sometimes available closed form e.g.\ $\mathbb{T}^n$, $\textrm{SO}_3(\rset)$.
+   %     \item Discretise forward SDE \cref{eq:langevin}.
+   %     \item Converge to $\piinv$ with geometric rate.
+   % \end{itemize}
+   % \vspace{-2em}
+   
+   % \begin{figure}
+   %     \centering
+   %     \begin{subfigure}[t]{0.30\textwidth}
+   %         \includegraphics[width=\textwidth, trim={4.5em 4.5em 4.0em 4.0em},clip]{images/grw.png}
+   %     \end{subfigure}
+   %     \hfill
+   %     \begin{subfigure}[t]{0.30\textwidth}
+   %         \includegraphics[width=\textwidth, trim={4.5em 4.5em 4.0em 4.0em},clip]{images/grw.png}
+   %     \end{subfigure}
+   %     \hfill
+   %     \begin{subfigure}[t]{0.30\textwidth}
+   %         \includegraphics[width=\textwidth, trim={4.5em 4.5em 4.0em 4.0em},clip]{images/grw.png}
+   %     \end{subfigure}
+   %     \label{fig:grw}
+   % \end{figure}
+   
+   % \end{frame}
+   
+   
+   \begin{frame}{Summary of SGM on different spaces}
+   
+   \begin{table}[t]
+   \small
+   \centering
+   \renewcommand*{\arraystretch}{1.2}
+   \begin{tabular}{lccc}
+     \toprule 
+     Ingredient \textbackslash ~Space  &       Euclidean                & `Generic' Manifold & Compact \\ \hline
+     Forward process $\rmd \bfX_t=$ & $\hlblue{-\bfX_t} \rmd t +  \hlred{\sqrt{2}} \rmd \bfB_t^\M$ & $ \hlblue{-\nabla_{\bfX_t} U(\bfX_t)} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t^\M$ & $ \rmd \bfB_t^\M$ \\
+   %   Easy-to-sample distribution & Gaussian & Wrapped Gaussian & Uniform \\
+     Base distribution & Gaussian & Wrapped Gaussian & Uniform \\
+   % Time reversal  &  \citeauthor{cattiaux2021time} & \multicolumn{2}{c}{\Cref{thm:time_reversal_manifold}}   \\   
+   Time reversal  &  Cattiaux, 2021 & \multicolumn{2}{c}{Theorem 6}   \\   
+   %   Sampling forward process & Direct & \multicolumn{2}{c}{Geodesic Random Walk (\Cref{alg:grw})}\\
+     Sampling forward & Direct & \multicolumn{2}{c}{Geodesic Random Walk (\Cref{alg:grw})}\\
+   %   Sampling backward process & Euler--Maruyama & \multicolumn{2}{c}{Geodesic Random Walk (\Cref{alg:grw})} \\
+     Sampling backward & Euler--Maruyama & \multicolumn{2}{c}{Geodesic Random Walk (\Cref{alg:grw})} \\
+     \bottomrule
+   \end{tabular}
+   \vspace{.2cm}
+   \caption{\small Differences between SGM on Euclidean spaces and RSGM on Riemannian manifolds.}%, and compact Riemannian manifolds.}
+   \label{tab:difference}
+   \end{table}
+   
+   
+   \end{frame}
+   
+   
+   \begin{frame}{Score approximation: Denoising score matching (DSM)}
+       % \todo[inline]{refactor with 1st part}
+       % \begin{equation}
+           % \textstyle{
+       %         \hlyellow{\nabla_{x_t} \log p_t(x_t)} = \int_{\M} \hlorange{\nabla_{x_t} \log p_{t|s}(x_t|x_s)} \Pbb_{s|t}(x_t, \rmd x_s)  .
+       %     }    
+       % \end{equation}
+       %
+       Denoising score matching (DSM) on manifolds is \textit{very} similar to the Euclidean case
+       \begin{equation}
+           \ell_{t|s}(\hlyellow{\mathbf{s}_t}) = \int_{\M^2} \norm{\hlorange{\nabla_x \log p_{t|s}(x_t|x_s)} -
+             \hlyellow{\mathbf{s}_t}(x_t)}^2 \rmd \Pbb_{s,t}(x_s,x_t).
+       \end{equation}
+       % \pause
+       % However we will likely need to approximate $\nabla_x \log p_{t|s}(x_t|x_s)$.
+       However need to evaluate $\nabla_x \log p_{t|s}(x_t|x_s)$. % is usually unavai.
+       \pause
+       \vspace{-\topsep}
+       \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+           \item \textbf{Sturm--Liouville} decomposition \cite{chavel1984eigenvalues} (assuming compactness)
+       \end{itemize}
+       \begin{equation}
+           \label{eq:infinite_sum1}
+           \textstyle{p_{t|0}(x_t|x_0) = \sum_{j \in \N} \rme^{-\lambda_j t} \phi_j(x_0)\phi_j(x_t).}
+       \end{equation}
+       %
+       Truncation approximation to DSM 
+       \begin{equation} 
+           \label{eq:heat_kernel_trunc}
+           \hlorange{ \nabla_{x_t} \log p_{t|0}(x_t|x_0)} \approx \textstyle{S_{J,t}(x_0,x_t) \triangleq 
+           %   {\sum_{j=0}^J \rme^{-\lambda_j t}  \phi_j(x_0) \nabla_{x_t} \phi_j(x_t)}/{\sum_{j=0}^J \rme^{-\lambda_j t} \phi_j(x_0) \phi_j(x_t)}
+           \nabla_{x_t} \log {\sum_{j=0}^J  \rme^{-\lambda_j t} \phi_j(x_0)\phi_j(x_t)}
+           . }
+       \end{equation}
+       \pause
+       \vspace{-\topsep}
+       \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+           \item \textbf{Varadhan approximation} to DSM, 1st order taylor expansion
+       \end{itemize}
+       \begin{equation}
+           \label{eq:varadhan}
+           \textstyle{\lim_{t \to 0} t  \hlorange{\nabla_{x_t}\log p_{t|0}(x_t|x_0)} = \exp^{-1}_{x_t}(x_0) . }
+       \end{equation}
+       %
+   \end{frame}
+   
+   \begin{frame}{Comparing Approximations}
+       \centering
+       \includegraphics[width=\textwidth]{images/s2_heat_kernel.pdf}
+   \end{frame}
+   
+   \begin{frame}{Score approximation: Implicit Score Matching (ISM)}
+       We can also avoid the need for $\nabla_{x_t} \log p_{t|0}(x_t|x_0)$ by using \textbf{implicit score matching}.
+       \begin{proposition}{}{}
+         \label{prop:implicit_der}
+         Let $t, s \in \ocbr{0,T}$ with $t>s$. Then, for any
+         $\hlyellow{\mathbf{s}_t}\in \rmc^\infty(\M)$,
+         $\ell_{t|s}(\hlyellow{\mathbf{s}_t}) = 2 \ellim_t(\hlyellow{\mathbf{s}_t}) + \int_{\M^2}
+         \norm{\hlorange{\nabla_{x_t} \log p_{t|s}(x_t|x_s)}}^2 \rmd
+         \Pbb_{s,t}(x_s,x_t)$, where
+         \begin{equation}
+           \label{eq:ism_loss}
+             \ellim_t(\mathbf{s}_t) = \int_\M \cbr{
+             \tfrac{1}{2}\norm{\hlyellow{\mathbf{s}_t}(x_t)}^2 + \dive_{\M}(\hlyellow{\mathbf{s}_t})(x_t) }
+             \rmd \Pbb_t(x_t).
+         \end{equation}
+       \end{proposition}
+   % N.B. $\dive \neq \dive_{\M}$! There is a subtle correction required due to the curvature of the manifold. For a vector field on a manifold $X$ in a particular coordinate system
+   % \begin{equation*}
+   %     \dive_\M (X) = \frac{1}{\sqrt{|\det g|}} \dive\del{\sqrt{|\det g|}X}
+   % \end{equation*}
+   We need sufficient conditions on $p_{t|s}(x_t | x_s) \v{s}(x_t)$, but these are easy to satisfy.
+   
+   \end{frame}
+   
+   
+   
+   \begin{frame}{Score approximation: Summary}
+   
+   \begin{table}[h]
+   \vspace{-0.5cm}
+   \centering
+   \small
+   \renewcommand*{\arraystretch}{1.3}
+   \renewcommand*{\tabcolsep}{0.15em}
+   \begin{tabular}{lc|c|cc|c}
+   \toprule
+   \multirow{2}{5em}{Loss} &\multirow{2}{6em}{Approx} & \multirow{2}{6em}{Loss function} &  \multicolumn{2}{c|}{Requirements} & \multirow{2}{5em}{Complexity} \\
+   & & & $p_{t|0}$ & $\exp^{-1}_{\bfX_t}$ &  \\
+   \midrule
+   \multirow{3}{4.5em}{$\ell_{t|0}$ (DSM)} & None & $\frac{1}{2} \E \left[ \| \hlyellow{\mathbf{s}}(\bfX_t) - \hlorange{\nabla \log  p_{t|0}(\bfX_t | \bfX_0)} \|^2 \right]$ & \cmark & \xmark & $\mathcal{O}(1)$ \\
+   & Truncation  &  $\frac{1}{2} \E \left[ \| \hlyellow{\mathbf{s}}(\bfX_t) - S_{J,t}(\bfX_0,\bfX_t) \|^2 \right]$ &  \begin{tabular}{@{}c@{}}
+   \def\arraystretch{0.1}
+   eigen\vspace{-0.5em}\\system\end{tabular} & \xmark & $\mathcal{O}(1)$ \\
+    & Varhadan  &  $\frac{1}{2} \E \left[ \| \hlyellow{\mathbf{s}}(\bfX_t) - \exp_{\bfX_t}^{-1}(\bfX_0) / t \|^2 \right]$ & \xmark & \cmark & $\mathcal{O}(1)$ \\ \midrule
+   $\ell_{t|s}$ (DSM) & Varhadan  &  $\frac{1}{2} \E \left[ \| \hlyellow{\mathbf{s}}(\bfX_t) - \exp^{-1}_{\bfX_t}(\bfX_s) / (t-s) \|^2 \right]$ & \xmark & \cmark & $\mathcal{O}(1)$  \\ \midrule
+   \multirow{2}{4.5em}{$\ellim_t$ (ISM)}  & Deterministic & $\E \left[\frac{1}{2} \| \hlyellow{\mathbf{s}}(\bfX_t) \|^2 + \dive_\M( \hlyellow{\mathbf{s}})(\bfX_t)  \right]$  &  \xmark & \xmark & $\mathcal{O}(d)$ \\
+   & Stochastic & $\E \left[\frac{1}{2} \| \hlyellow{\mathbf{s}}(\bfX_t) \|^2 + \vareps^\top \partial \hlyellow{\mathbf{s}}(\bfX_t) \vareps  \right]$ &  \xmark & \xmark & $\mathcal{O}(1)$  \\% \bottomrule
+   \end{tabular} 
+   \vspace{-0.2cm}
+   \caption{\small
+   Computational complexity of score matching losses w.r.t. score network passes. %forward and backward passes.
+   % $\vareps$ is a random variable on $\mathrm{T}_{\bfX_t}\M$ such that $\expeLigne{\vareps}=0$ and $\expeLigne{\vareps\vareps^\top}=\Id$.
+   }
+   \label{tab:sm_losses}
+   \end{table}
+   
+   \end{frame}
+   
+   
+   
+   \begin{frame}{Parametrisation of score network}
+   
+   Approximate \textbf{Stein score} $(\nabla \log p_t)_{t \in \ccint{0,T}} \approx \hlyellow{\mathbf{s}_\theta} (t, \cdot)$ and $\hlyellow{\mathbf{s}_\theta: \ \ccint{0,T} \to \XM}$.
+   \pause
+   \vfill
+   \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+       \item \textbf{Generators} of vector fields:
+   \begin{itemize} \setbeamertemplate{itemize items}[circle]
+       \item $\hlyellow{\mathbf{s}_\theta}(t,x) \triangleq \sum_{i=1}^n \mathbf{s}^i_\theta(t,x) \hlgreen{E_i}(x)$.
+       \item \textit{Definition}: Smooth vector fields $\{\hlgreen{E_i}(x)\}_{i=1}^n$ s.t.\
+   $\text{span}\left( \{\hlgreen{E_i}(x)\}_{i=1}^n \right) = \mathrm{T}_x\M$.
+       \item $\M$ is parallelisable $\Leftrightarrow$ there exists generators $\{\hlgreen{E_i}\}_{i=1}^n$ with $n = d$.
+    \end{itemize}
+   \end{itemize}
+    %
+    \pause
+    \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+       \item Examples for several class of manifolds:
+     \begin{itemize} \setbeamertemplate{itemize items}[circle]
+       \item If $\M=\rset^d$, can choose $\hlgreen{E_i}(x) = e_i$ for $i=1,\dots,d$.
+       \item If $\M=G$ is a Lie group, can choose $\hlgreen{E_i}(g) = g \cdot e_i$ with $\{e_i\}_i$ basis of Lie algebra.
+       \item If $\M \subset \rset^n$ is submersion, can choose $\hlgreen{E_i}(x) = P_i(x)$ for $i=1,\dots,n$ with $P_i$ the ith column of the tangent projection matrix operator.
+       \end{itemize}
+   \end{itemize} 
+   
+   \end{frame}
+   
+   
+   
+   % \begin{frame}{Important 'tricks'}
+       
+   % % \todo[inline]{Move non manifold specific tricks to 1st part?}
+   % % \todo[inline]{Also: Loss function weighting, corrector and more}
+   
+   % \begin{itemize}
+   %     % \item \textbf{Exponential moving average} of the weights $\Leftarrow$ due to high stochasticity of the training loss.
+   %     % \item \textbf{Noise scheduling} $\beta(t)$
+   %     % \begin{itemize}
+   %     % \item $\rmd \bfX_t = \hlblue{-\beta(t)~\nabla_{\bfX_t} U(\bfX_t)} \rmd t + \hlred{\sqrt{2}\sqrt{\beta(t)}} \rmd \bfB_t^\M$.
+   %     % \item `Rescale time': $t \mapsto \int_0^t \beta(s) ds$.
+   %     % \item Spend more time when the score has high norm, i.e.\ when $t$ is small.
+   %     % \item Aim: $\mathbb{W}(\mathcal{L}(\bfX_t), \piinv) \approx \mathbb{W}(\mathcal{L}(\bfX_t), p_0) * (1 - t)_+$.
+   %     % % \item Aim: $\mathbb{W}(\mathcal{L}(\bfX_t), \piinv)$ roughly linear with $t$ and $\approx 0$ when $t=1$.
+   %     % \end{itemize}
+       
+   %     \item \textbf{Score network parametrisation}
+   %     \begin{itemize}
+   %         \item $\hlyellow{\mathbf{s}_\theta}(t, x_t) = \left(h_\theta(t, x_t)/ \sigma_t + 2*\hlblue{b(t, x_t)}/\beta(t) \right)$.
+   %         \item with $\PE{\left[ \| \nabla \log p(\bfX_t|\bfX_0)\|^2 \right]}^{1/2} = \text{Std}[\bfX_t|\bfX_0] \triangleq \sigma_t = 1 - e^{-\int_0^1 \beta(s) ds}$.
+   %         % \item Such that if $h_\theta(t, x_t)=0$, reverse drift $\bar{b}(t, y_t) = -\beta(t) b(t, x_t) + \beta(t) * 2*b(t, x_t)/\beta(t) ={b}(t, y_t)$.
+   %         \item If $h_\theta(t, x_t)=0$, \textbf{forward=backward} since $\hlblue{\bar{b}(t, y_t) = {b}(t, y_t)}$.
+   %         % \item and $\hlblue{b}$ forward drift ($\hlblue{b(t, x_t)}/\beta(t)^2 = -x_t$ if $\M = \rset^d$).
+   %         \item If $\M=\rset$ recovers more or less \cite[][e.g.]{daras2022Soft} [Not exactly as they use $\sigma^2$?].
+   %     \end{itemize}
+        
+   % \end{itemize}
+       
+   % \end{frame}
+   
+   
+   \begin{frame}{Theoretical guaranties on time-reversal}
+   
+   \begin{theorem}{}{}
+       \label{thm:weak_qualitative}
+       % \rref{assum:manifold}
+       % Assume (something about manifolds), that $p_0$ is smooth and positive and that
+       % there exists $\Mtt \geq 0$ such that for any $t \in \sbr{0,T}$ and
+       % $x \in \M$, $\norm{\mathbf{s}_{\theta^{\star}}(t,x) - \nabla \log p_{t}(x)} \leq \Mtt$,  with $\mathbf{s}_{\theta^\star} \in \rmc(\sbr{0,T}, \mathcal{X}(\M))$. Then if $T > 1/2$, there exists $C \geq 0$ independent on $T$ such that 
+       Under mild assumption over $p_0$ and assuming that
+       there exists $\Mtt \geq 0$ such that for any $t \in \ccint{0,T}$ and
+       $x \in \M$, $\norm{\hlyellow{\mathbf{s}_{\theta^{\star}}}(t,x) - \nabla \log p_{t}(x)} \leq \Mtt$, 
+       with $\hlyellow{\mathbf{s}_{\theta^\star}} \in \rmc(\ccint{0,T}, \mathcal{X}(\M))$.
+       Then if $T > 1/2$, there exists $C \geq 0$ independent on $T$ s.t.\
+       \begin{equation}
+           \textstyle{
+            \mathbb{W}_1(\mathcal{L}(Y_N), p_0) = C (  \rme^{-\lambda_1 T} + \sqrt{T/2}   \mathtt{M} + \rme^T \gamma^{1/2})  ,
+           }
+       \end{equation}
+       where $\mathbb{W}_1$ is the Wasserstein distance of order one. % on the probability measures on $\M$.
+   
+   \end{theorem}
+   
+   \end{frame}
+   
+   
+   \section{Experimental results}
+   
+   \begin{frame}{Prior work}
+   
+   
+   \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+       \item \textbf{Continuous normalising flows} (CNFs)~\cite{mathieu2020riemannian,falorsi2021Continuous}
+   \end{itemize}
+   % \todo[inline]{already introduced in SGM part}
+   Train drift $\hlblue{b_\theta}$ by maximising likelihood, solving the following \textbf{augmented} ODE
+   \begin{equation}
+       \frac{\rmd}{\rmd t} 
+       \begin{bmatrix} \bfX_t \\ \log p(\bfX_t) \end{bmatrix}
+       = \hlblue{\begin{bmatrix} b_\theta(t, \cdot) \\ -\dive\left(b_\theta(t, \cdot) \right) \end{bmatrix}(\bfX_t)}.
+   \end{equation}
+   \pause
+   %
+   % Train drift \hlblue{b_\theta} by maximising the likelihood ($\c{O}(Nd^2)$ or $\c{O}(Nd)$ with $\dive$ estimator)
+   % \begin{equation}
+   %     \PE \left[ \log p_0(\bfX_0) \right] = \PE [  \log p_T(\bfX_T) - \int_0^T \dive( \hlblue{b_\theta(s, \bfX_s)}) \rmd s ].%     % }
+   % \end{equation}
+   % \begin{itemize}
+   %     \item 
+   % \end{itemize}
+   
+   \begin{itemize} \setbeamertemplate{itemize items}[triangle]
+       \item \textbf{Moser flows}~\cite{rozen2021moser}
+   % \end{itemize}
+   % \todo[inline]{To fill}
+   \begin{itemize}
+       \item Build on CNFs but uses a likelihood estimator which bypass solving an ODE.
+       \item Require a regularisation term involving an integral over the manifold...
+       \item Hence scale poorly with the manifold dimension.
+   \end{itemize}
+   \end{itemize}
+   \end{frame}
+   
+   
+   \begin{frame}{Prior work: Summary}
+   
+   \begin{table}[t]
+   \centering
+   \small
+   \setlength{\tabcolsep}{0.5em}
+   \renewcommand*{\arraystretch}{1.4}
+   \begin{tabular}{l|cccc}
+   \toprule
+   Method & Training & Likelihood evaluation & Sampling \\
+   \midrule
+   RCNF & ODE $\mathcal{O}(dN)$ & Augmented ODE $\mathcal{O}(dN)$ & ODE $\mathcal{O}(N)$ \\ %\midrule
+   Moser flow & $\text{div}$ $\mathcal{O}(dk)$ or $\mathcal{O}(k)$ & Augmented ODE $\mathcal{O}(dN)$ & ODE $\mathcal{O}(N)$ \\ %\midrule
+   RSGM & Score matching $\mathcal{O}(d)$ or $\mathcal{O}(1)$ & Augmented ODE $\mathcal{O}(dN)$ & SDE $\mathcal{O}(N^*)$ \\ \bottomrule
+   \end{tabular} 
+   
+   \caption{ \small Summary of computational complexity (w.r.t.\ neural network
+     forward and backward passes) for different methods. 
+     $d$ is the manifold
+     dimension, $k$ the number of Monte Carlo batches in Moser flow's regularizer,
+     $N$ is the number of steps in the (adaptive) ODE solver, whereas $N^*$ is the
+     number of steps in the SDE Euler-Maruyama solver.%--which can usually be lower
+   %   than $N$.  Moser flow and RSGM training complexity varies if the Hutchinson
+   %   stochastic estimator is used.
+   % % to approximate the divergence.
+   % See \cref{tab:sm_losses} for score matching losses complexity.
+   % The score matching training complexity depends on the specific choice of loss (see \cref{tab:sm_losses}).
+   }
+   \label{tab:comparison_methods}
+   \end{table}
+   
+   
+   \end{frame}
+   
+   
+   \begin{frame}{Earth science data}
+   
+   % \begin{itemize}
+   %     \item We evaluate RSGMs on occurrences of earth and climate science events distributed on the surface of the earth.
+   %   \end{itemize}
+   \begin{figure}[t]
+       % \vspace{-0.2em}
+       \centering
+       \begin{subfigure}{0.20\textwidth}
+           \includegraphics[width=\textwidth]{images/pdf_volcanoe_310122.png}
+           \caption{Volcano}
+       \end{subfigure}
+       \hfill
+       \begin{subfigure}{0.20\textwidth}
+           \includegraphics[width=\textwidth]{images/pdf_earthquake_310122.png}
+           \caption{Earthquake}
+       \end{subfigure}
+       \hfill
+       \begin{subfigure}{0.20\textwidth}
+           \includegraphics[width=\textwidth]{images/pdf_flood_310122.png}
+           \caption{Flood}
+       \end{subfigure}
+       \hfill
+       \begin{subfigure}{0.20\textwidth}
+           \includegraphics[width=\textwidth]{images/pdf_fire_310122.png}
+           \caption{Fire}
+       \end{subfigure}
+       % \caption{
+       %     Trained score-based generative models on earth sciences data.
+       %     The learned density is colored green-blue.
+       %     Blue and red dots represent training and testing datapoints, respectively.
+       % }
+       % \vspace{-2em}
+       % \caption{
+       %     Trained RSGM on earth sciences data, with density in green-blue.
+       % }
+       \label{fig:geoscience}
+       \vspace{-1.2em}
+   \end{figure}
+   %
+   
+   \begin{table}[t]
+       \centering
+       \small
+       \begin{tabular}{lrrrrr}
+       \toprule
+        Method & {Volcano} & {Earthquake} & {Flood} & {Fire} \\
+       \midrule
+       Mixture of Kent & $-0.80_{\pm 0.47}$ & $0.33_{\pm 0.05}$ & $0.73_{\pm 0.07}$ & $-1.18_{\pm 0.06}$ \\
+   Riemannian CNF            &                      $\mathbf{-6.05_{\pm 0.61}}$ &                             ${0.14_{\pm 0.23}}$ &                            ${1.11_{\pm 0.19}}$ &                         $\mathbf{-0.80_{\pm 0.54}}$ \\
+   Moser Flow                &                         ${-4.21_{\pm 0.17}}$ &                         $\mathbf{-0.16_{\pm 0.06}}$ &                         $\mathbf{0.57_{\pm 0.10}}$ &                         $\mathbf{-1.28_{\pm 0.05}}$ \\
+   Stereographic Score-Based &  ${-3.80_{\pm 0.27}}$ &  $\mathbf{-0.19_{\pm 0.05}}$ &  $\mathbf{0.59_{\pm 0.07}}$ &  $\mathbf{-1.28_{\pm 0.12}}$ \\
+   Riemannian Score-Based    &  ${-4.92_{\pm 0.25}}$ &  $\mathbf{-0.19_{\pm 0.07}}$ &  $\mathbf{0.45_{\pm 0.17}}$ &  $\mathbf{-1.33_{\pm 0.06}}$ \\
+       \midrule 
+       Dataset size & 827 & 6120 & 4875 & 12809 \\
+       \bottomrule
+       \end{tabular}
+       % \caption{
+       % Negative log-likelihood scores for each method on the earth and climate science datasets.
+       % Bold indicates best results (up to statistical significance).
+       % Means and confidence intervals are computed over 5 different runs.
+       % Novel methods are shown with blue shading.
+       % }
+       \caption{
+       Negative log-likelihood. 
+       % for each method on the earth science datasets.
+       % Bold indicates best results (up to statistical significance).
+       % Means and confidence intervals are computed over 5 different runs.
+       Confidence intervals computed over 5 runs.
+       % Novel methods are shown with blue shading.
+       }
+       \label{tab:geoscience}
+       \vspace{-1.5em}
+   \end{table}
+   
+   \end{frame}
+   
+   
+   \begin{frame}{High dimensional torus}
+   
+       \begin{itemize}
+           \item We consider a wrapped Gaussian target distribution on $\mathbb{T}^d = {\mathbb{S}^1 \times \dots \times \mathbb{S}^1}$.
+           % ,to assess the scalability of the different methods with respect to the dimension $d$.
+           % We consider a wrapped Gaussian target distribution on $\mathbb{T}^d$ with a random mean and unit variance.
+         \end{itemize}
+       \pause
+       \vspace{-0.5em}
+       \begin{figure}[t]
+           \centering
+           % \includegraphics{manifold_neurips/images/high-dim-None.pdf}
+           % \includegraphics{manifold_neurips/images/high-dim-Rademacher.pdf}
+           \includegraphics[width=0.95\textwidth]{images/high-dim.pdf}
+           \label{fig:high-dim}
+       \end{figure}
+   
+   \end{frame}
+   
+   
+   \begin{frame}{Synthetic data on Lie groups}
+   
+   \begin{itemize}
+       \item We consider a mixture of wrapped Gaussian target distribution on
+       % turn to the task of density estimation on the special orthogonal group
+       $\mathrm{SO}_3(\rset) = \ensembleLigne{\mathrm{Q} \in
+         \mathrm{M}_3(\rset)}{\mathrm{Q} \mathrm{Q}^\top = I_3, \
+         \det(\mathrm{Q})=1}$.
+     \end{itemize}
+   \pause
+   \begin{figure}[t]
+       \centering
+           \includegraphics[trim={0 0 0 0},clip, width=0.6\textwidth]{images/so3_conditional.png}
+           % from target distribution [Top] and RSGM model [Bottom].}%  for each mixture component.}
+           \label{fig:so3_conditional}
+           \vspace{-0.5em}
+       \caption{Histograms of $\mathrm{SO}_3(\rset)$ samples from a target mixture distribution.
+       %  with $M=4$ components, represented via their Euler angles.
+        }
+       % \caption{
+       %     Trained score-based generative models on synthetic $\mathrm{SO}_3(\rset)$ data.
+       % }
+       \label{fig:so3}
+       \vspace{-0.5em}
+   \end{figure}
+   %
+   
+   \end{frame}
+   
+   
+   \begin{frame}{Synthetic data on Lie groups (Cont'd)}
+   
+   \begin{table}[t]
+       \setlength\tabcolsep{5pt}
+       \centering
+       \small
+       \begin{tabular}{lrrrrrrrr}
+       \toprule
+       \multirow{2}{4.5em}{Method} & \multicolumn{2}{c}{$M=16$} & \multicolumn{2}{c}{$M=32$} &\multicolumn{2}{c}{$M=64$} \\ \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+       & $\log p$ & NFE & $\log p$ & NFE & $\log p$ & NFE\\
+        
+       \midrule
+   Moser Flow & ${0.85_{\pm 0.03}}$ & ${2.3_{\pm 0.5}}$ & ${0.17_{\pm 0.03}}$ & ${2.3_{\pm 0.9}}$ & $\mathbf{-0.49_{\pm 0.02}}$ & ${7.3_{\pm 1.4}}$ \\
+   Exp-wrapped SGM & $\mathbf{0.87_{\pm 0.04}}$ & ${0.5_{\pm 0.1}}$ & ${0.16_{\pm 0.03}}$ & ${0.5_{\pm 0.0}}$ & ${-0.58_{\pm 0.04}}$ & ${0.5_{\pm 0.0}}$ \\
+   RSGM & $\mathbf{0.89_{\pm 0.03}}$ & $\mathbf{0.1_{\pm 0.0}}$ & $\mathbf{0.20_{\pm 0.03}}$ & $\mathbf{0.1_{\pm 0.0}}$ & $\mathbf{-0.49_{\pm 0.02}}$ & $\mathbf{0.1_{\pm 0.0}}$ \\
+   
+       \bottomrule
+       \end{tabular}
+       % \vspace{0.2cm}
+       \caption{
+       Log-likelihood and neural function evaluations (NFE) in $10^3$.
+       } 
+       % on the synthetic mixture distribution with $M$ components on $\mathrm{SO}_3(\rset)$.
+       % Bold indicates best results (up to statistical significance).
+       % Means and standard deviations are computed over 5 different runs.
+       % Novel methods are shown with blue shading.
+       % }
+       \label{tab:so3}
+   \end{table}
+   \end{frame}
+   
+   
+   \begin{frame}{Hyperbolic experiments}
+       \begin{figure}
+       \centering
+       \hfill
+       \begin{subfigure}[t]{0.28\textwidth}
+           \includegraphics[width=\textwidth, trim={0.0em 0.0em 0.0em 5em},clip]{images/hyperbolic/ref.png}
+           \caption{Target distribution.}
+       \end{subfigure}
+       \hfill
+       \begin{subfigure}[t]{0.28\textwidth}
+           \includegraphics[width=\textwidth, trim={0.0em 0.0em 0.0em 5em},clip]{images/hyperbolic/exp_wrap.png}
+           \caption{Exp-wrapped SGM.}
+       \end{subfigure}
+       \hfill
+       \begin{subfigure}[t]{0.28\textwidth}
+           \includegraphics[width=\textwidth, trim={0.0em 0.0em 0.0em 5em},clip]{images/hyperbolic/rsgm_quadratic.png}
+           \caption{RSGM.}
+       \end{subfigure}
+       \hfill
+        \caption{Samples from different probability distributions on $\mathbb{H}^2$ coloured w.r.t\ their density.}
+       \label{fig:hyperbolic}
+   \end{figure}
+   \end{frame}
+   
+   
+   % \begin{frame}{Future directions}
+   % \end{frame}
+   

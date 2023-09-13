@@ -1,0 +1,217 @@
+% \documentclass[mathserif,notheorems,aspectratio=169,xcolor=table,handout]{beamer}
+\documentclass[mathserif,notheorems,aspectratio=169,xcolor=table]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{lettrine}
+\usepackage{multicol}
+\usepackage{cleveref}
+
+\usepackage[commands,environments,enumerate,citations,authoryear,oxfordcolors,presentation]{MJH}
+% \usepackage[style=authoryear-icomp, maxbibnames=9, maxcitenames=2, backend=biber]{biblatex}
+\addbibresource{references.bib}
+\usepackage{stmaryrd}
+% \usepackage{xargs} % for newcommandx
+\usepackage{multirow} % for tables
+\usepackage{booktabs} % for tables
+\usepackage{algorithm} % for algorithms
+\usepackage[noend]{algpseudocode} % for algorithms
+\usepackage{subcaption}
+\usepackage{todonotes}
+\usepackage{scalefnt}
+\usepackage{animate} % for animating slides
+\usepackage{bm}
+\usepackage[makeroom]{cancel}
+% \usepackage{enumitem}
+% \setlist[itemize]{leftmargin=5.5mm}
+\usetikzlibrary{arrows,positioning}
+\setlength{\leftmargini}{.2em}
+
+
+\Crefname{figure}{Fig.}{Figs.}
+\Crefname{tabular}{Tab.}{Tabs.}
+\Crefname{section}{Sec.}{Secs.}
+\Crefname{appendix}{App.}{Apps.}
+\Crefname{algorithm}{Alg.}{Algs.}
+
+\definecolor{algcol}{HTML}{7383ab}
+\definecolor{pearDark}{HTML}{2980B9}
+\definecolor{C0}{HTML}{1f77b4}
+\definecolor{C1}{HTML}{ff7f0e}
+\definecolor{C2}{HTML}{2ca02c}
+\definecolor{C3}{HTML}{d62728}
+
+\def\piinv{p_{\textup{ref}}}
+
+\def\bfX{\mathbf{X}}
+\def\bfY{\mathbf{Y}}
+\def\bfZ{\mathbf{Z}}
+\def\bfB{\mathbf{B}}
+
+\def\Qbb{\mathbb{Q}}
+\def\Pbb{\mathbb{P}}
+
+\def\rmd{\mathrm{d}}
+\def\rme{\mathrm{e}}
+\def\rmc{\mathrm{C}}
+\def\rmL{\mathrm{L}}
+
+\def\mtt{\mathtt{m}}
+\def\Mtt{\mathtt{M}}
+
+\newcommand{\X}{\boldsymbol{X}}
+\newcommand{\y}{\boldsymbol{y}}
+\newcommand{\w}{\boldsymbol{w}}
+\newcommand{\z}{\boldsymbol{z}}
+\newcommand{\p}{\boldsymbol{p}}
+\def\X{\mathcal{X}}
+\def\Y{\mathcal{Y}}
+\def\x{{x}}
+\def\u{{ \mathbf u}}
+\def\y{{y}}
+\def\z{{\mathbf z}}
+\def\w{{\mathbf w}}
+
+\def\rmT{\mathrm{T}}
+
+\newcommand{\method}{GeomNDP}
+\newcommand{\fwd}{\bfY}
+\newcommand{\bwd}{\bar{\bfY}}
+% \newcommand{\bwd}{\bfY^{\text{rev}}}
+
+\def\R{\mathbb{R}}
+\def\SE{\mathrm{SE}}
+\def\SEtwo{\mathrm{SE}(2)}
+\def\SE3{\mathrm{SE}(3)}
+\def\SEn{\mathrm{SE}(n)}
+\def\SO{\mathrm{SO}}
+\def\SO3{\mathrm{SO}(3)}
+\def\SOn{\mathrm{SO}(n)}
+\def\E{\mathrm{E}}
+% \def\E3{\mathrm{E}(3)}
+\def\Etwo{\mathrm{E}(2)}
+\def\En{\mathrm{E}(n)}
+% \def\O{\mathrm{O}}
+% \def\O3{\mathrm{O}(3)}
+% \def\On{\mathrm{O}(n)}
+\def\GL{\mathrm{GL}}
+\def\GL3{\mathrm{GL}(3)}
+\def\GLn{\mathrm{GL}(n)}
+
+
+\newcommand{\coint}[1]{\left[#1\right)}
+\newcommand{\ocint}[1]{\left(#1\right]}
+\newcommand{\ooint}[1]{\left(#1\right)}
+\newcommand{\ccint}[1]{\left[#1\right]}
+\newcommand{\cointLigne}[1]{[#1)}
+\newcommand{\ocintLigne}[1]{(#1]}
+\newcommand{\oointLigne}[1]{(#1)}
+\newcommand{\ccintLigne}[1]{[#1]}
+
+\newcommand{\KLLigne}[2]{\operatorname{KL}( #1 | #2 )}
+\def\eqsp{\;}
+\newcommand{\ensembleLigne}[2]{\{#1\,:\eqsp #2\}}
+\newcommand{\expeLigne}[1]{\PE \sbr{#1}}
+\newcommand{\PE}{\mathbb{E}}
+% \newcommand{\grad}{\mathrm{grad}}
+\newcommand{\dive}{\mathrm{div}}
+
+\def\rset{\mathbb{R}}
+\def\M{\mathcal{M}}
+\newcommand{\XM}{\mathcal{X}(\mathcal{M})}
+\def\vareps{\varepsilon}
+\def\ellim{\ell^{\mathrm{im}}}
+\def\Id{\operatorname{Id}}
+\def\trace{\operatorname{Tr}}
+
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}
+
+\colorlet{solidred}{red!60}
+\colorlet{solidblue}{blue!60}
+\colorlet{solidgreen}{green!60}
+\colorlet{solidyellow}{yellow!60}
+\colorlet{solidorange}{orange!60}
+
+\colorlet{red}{red!10}
+\colorlet{blue}{blue!10}
+\colorlet{green}{green!20}
+\colorlet{yellow}{yellow!20}
+\colorlet{orange}{orange!10}
+
+\newcommand{\hlred}[1]{\colorbox{red}{$\displaystyle#1$}}
+\newcommand{\hlyellow}[1]{\colorbox{yellow}{$\displaystyle#1$}}
+\newcommand{\hlorange}[1]{\colorbox{orange}{$\displaystyle#1$}}
+\newcommand{\hlblue}[1]{\colorbox{blue}{$\displaystyle#1$}}
+\newcommand{\hlgreen}[1]{\colorbox{green}{$\displaystyle#1$}}
+
+\newcommand{\blue}[1]{\textcolor{C0}{\textbf{#1}}}
+\newcommand{\orange}[1]{\textcolor{C1}{\textbf{#1}}}
+\newcommand{\green}[1]{\textcolor{C2}{\textbf{#1}}}
+\newcommand{\red}[1]{\textcolor{C3}{\textbf{#1}}}
+
+% \usepackage{lmodern}
+\mode<presentation> {
+    
+    \usetheme{metropolis}
+    \usefonttheme{professionalfonts}
+    % \usefonttheme{serif}
+
+}
+% \setbeamertemplate{note page}[plain]
+% \setbeameroption{show notes on second screen}
+
+% \title[Diffusion Models \& RSGM]{Score-based Generative Models \\ on Euclidean space and Riemannian manifolds}
+\title[Diffusion Models]{Geometric Neural Diffusion Processes}
+
+
+\author{Vincent Dutordoir}
+% \author{Émile Mathieu}
+% \institute[Cambridge] 
+% {
+%     {\small
+%     Newton Institute \\
+%     Deep dive: Generative Models for Inverse Problem
+%     }
+%     \medskip
+%     \begin{center}
+%         \includegraphics[width=0.35\linewidth]{images/logos/cambridge_full.png}
+%     \end{center}
+% }
+\date{\today}
+% \date{June 22nd, 2023}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage 
+\end{frame}
+
+
+
+\input{core/intro}
+
+\input{core/dgm}
+
+\input{core/continuous_sgm}
+
+\input{core/geomndp}
+
+% \section{Thanks for your attention! Questions? Remarks?}
+
+\section*{Appendix}
+
+
+\input{core/appendix2}
+% \input{core/appendix}
+
+% \input{core/rsgm}
+
+% \begin{frame}{Bibliography}
+\printbibliography
+% \end{frame}
+
+\end{document}
