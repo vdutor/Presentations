@@ -124,8 +124,6 @@ We specify the drift to be linear and the diffusion coefficient to be constant
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/forward.pdf}
 \caption{Forward OU process on 2D data.}
 \end{figure}
-\pause
-\vspace{-5mm}
 % At $t=T$ we end up with a distribution approximately $\mathcal{N}(\v{0},\v{I})$.
 \end{frame}
 
@@ -219,9 +217,10 @@ assuming $ \bwd_0$ is distributed the same as $\fwd_T$.
 Challenges:
 \vspace{-0.5em}
 \begin{enumerate}
-    \item We do not have access to $\fwd_T \Rightarrow$ Approximate as $\fwd_T \approx \fwd_\infty$!
-    \item The Stein score $\hlyellow{\nabla \log p_t}$ is intractable (requires solving Fokker-Planck...) $\Rightarrow$ learn it!
-    \item Cannot solve the SDE exactly $\Rightarrow$ discretise!
+    \item We do not have access to $\fwd_T \Rightarrow$ Approximate by $\mathcal{N}(0, \mathrm{Id})$
+    % \item The Stein score $\hlyellow{\nabla \log p_t}$ is intractable (requires solving Fokker-Planck...) $\Rightarrow$ learn it!
+    \item The score $\hlyellow{\nabla \log p_t} =\nabla \log \int p_{data}(\fwd_0) p_{t\mid 0}(\fwd_t \mid \fwd_0) \rmd \fwd_0$ is intractable $\Rightarrow$ learn it.
+    \item Cannot solve the SDE exactly $\Rightarrow$ discretise.
 \end{enumerate}
 %
 
@@ -246,7 +245,7 @@ Challenges:
 
 \begin{frame}{Learning the score \cite{hyvarinen2005estimation,vincent2011connection,song2021Scorebased}}
 
-\begin{itemize}
+\begin{itemize}[<+->]
     \item The Stein score $\hlyellow{\nabla \log p_t} =\nabla \log \int p_{data}(\fwd_0) p_{t\mid 0}(\fwd_t \mid \fwd_0) \rmd \fwd_0$ is intractable.
     \item However, it can be shown that the score is the minimiser of regression objective
     \begin{equation}
@@ -315,18 +314,30 @@ Challenges:
 % As previously mentioned, 
 The (true) reverse process is given by
 \begin{equation*}
-  \rmd \bwd_t = \left[ -\hlblue{b(T-t,\bwd_t)} + \hlred{\sigma(T-t)}^2 \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right] \rmd t + \hlred{\sigma(T-t)} \rmd \bfB_t.
+  \rmd \bwd_t = \left[ -{b(T-t,\bwd_t)} + {\sigma(T-t)}^2 \hlyellow{\nabla \log p_{T-t}(\bwd_t)}\right] \rmd t + {\sigma(T-t)} \rmd \bfB_t,\quad
+\hlorange{\bwd_0 \sim p(\fwd_T)}
 \end{equation*}
-We make the following approximations
-\begin{enumerate}
-    \item Initialise $\bwd_0 \sim \mathcal{N}(\v{0},\v{I})$ which approximates $p(\fwd_{T})$.
-    \item Use score approximation $\hlyellow{\nabla \log p_{T-t}(\bwd_t)} = \v{s}_\theta(T - t, \bwd_t)$.
-    \item Discretise SDE using Euler–Maruyama method
-\end{enumerate}
+
+\pause
+\vspace{5mm}
+
+The approximate sampling process is given by
+\begin{equation*}
+  \rmd \bwd_t = \left[ -{b(T-t,\bwd_t)} + {\sigma(T-t)}^2 \hlyellow{\v{s}_\theta(T-t,\bwd_t)}\right] \rmd t + {\sigma(T-t)} \rmd \bfB_t,\quad \hlorange{\bwd_0 \sim \mathcal{N}(\v{0}, \textrm{Id})}
+\end{equation*}
+% with $\hlorange{\bwd_0 \sim \mathcal{N}(\v{0}, \textrm{Id})}$.
+\pause
+% We make the following approximations
+% \begin{enumerate}
+%     \item Initialise $\bwd_0 \sim \mathcal{N}(\v{0},\v{I})$ which approximates $p(\fwd_{T})$.
+%     \item Use score approximation $\hlyellow{\nabla \log p_{T-t}(\bwd_t)} = \v{s}_\theta(T - t, \bwd_t)$.
+%     \item Discretise SDE using Euler–Maruyama method
+% \end{enumerate}
+\vspace{-3mm}
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/reverse.pdf}
-% \caption{Reverse process}
+\caption{Reverse process}
 \end{figure}
 % \begin{equation*}
 %      % \fwd_t \approx \fwd_{t-1} + \gamma_t \hlblue{b(t, \fwd_{t-1})} + \sqrt{\gamma_t} \hlred{\sigma(t, \fwd_t)} \bfZ_t , \quad \bfZ_t \sim \c{N}(\v{0},\m{I})

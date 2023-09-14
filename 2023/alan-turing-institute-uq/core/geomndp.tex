@@ -186,19 +186,15 @@ and $m: \X \rightarrow \Y$.
     \vspace{3mm}
     \begin{proposition}{Invariant Neural Diffusion Processes}{}
         \label{prop:inv_prior}
-    The denoising process on functions as defined above
-    % \begin{align}\label{eq:approx_backward_SDE}
-    %     \textstyle 
-    %     \rmd \bwd_t^\theta(\x) &= \hlblue{\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \mathbf{s}^K_\theta(T - t, \x, \bwd_t(\x)) \} \beta_{T-t}} \rmd t \nonumber \\
-    %     &\quad + \hlred{\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t,
-    %   \end{align}
-    %  the time-reversal SDE \eqref{eq:backward_SDE} where the score is approximated by a score network $\mathbf{s}_\theta: [0, T] \times \X^n \times \Y^n \rightarrow \rmT \Y^n$, 
-     and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
+    The denoising process on functions as defined above and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
+     \pause
      \begin{enumerate}
         \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), i.e.
         $$
         m(g \cdot x) = \rho(g) m(x)\quad\text{and}\quad k(g \cdot x, g \cdot x') = \rho(g)k(x,x')\rho(g)^\top,
         $$
+        \pause
+        \vspace{-1cm}
         \item the score network is $G$-equivariant vector field, i.e.
         $$
         \mathbf{s}_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y),
@@ -375,20 +371,21 @@ Condition is a subspace of the state space: $\fwd^\mathcal{C} = (y^{(1)}, \ldots
 \end{frame}
 
 \begin{frame}{Conditional sampling in Neural Diffusion Processes}
-\begin{itemize}
+\begin{itemize}[<+->]
 \item We need the \textbf{conditional score}
 $
-\nabla \log p_t(\fwd_t) \implies \nabla \log p_t(\fwd_t \mid \fwd^\mathcal{C})
+\nabla \log p_t(\fwd_t) \rightarrow \hlgreen{\nabla \log p_t(\fwd_t \mid \fwd^\mathcal{C})}
 $
 \item Applying Bayes rule to the conditional score
 \begin{equation*}
-\nabla_{\fwd_t} \log p_t(\fwd_t \mid \fwd^\mathcal{C})
+\hlgreen{\nabla_{\fwd_t} \log p_t(\fwd_t \mid \fwd^\mathcal{C})}
 = \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd^\mathcal{C}) - \nabla_{\fwd_t} \log p_t(\fwd^\mathcal{C})
 = \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd^\mathcal{C})
 \end{equation*}
 \item Use standard reverse process with score $s_\theta(t, [\fwd_t, \fwd^\mathcal{C}])$.
 \end{itemize}
 \vspace{5mm}
+\pause
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}

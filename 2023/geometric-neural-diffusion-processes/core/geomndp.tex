@@ -239,7 +239,7 @@ and $m: \X \rightarrow \Y$.
     \item $ \fwd_t \rightarrow \mathrm{GP}(m, k) \triangleq \fwd_\infty$~\cite{phillips2022Spectral}.
     \pause
     \item $\fwd_t$ interpolates between $\fwd_0$ and $\fwd_\infty$.
-    \item $\fwd_t(\x)|\bm{y}_0 = \mathrm{N}(m_t(\x; \bm{y}_0), \mathrm{K}_t(\x,\x; \bm{y}_0))$ for any $\x \in \X^n$.
+    % \item $\fwd_t(\x)|\bm{y}_0 = \mathrm{N}(m_t(\x; \bm{y}_0), \mathrm{K}_t(\x,\x; \bm{y}_0))$ for any $\x \in \X^n$.
 \end{itemize}
     
 
@@ -389,29 +389,52 @@ $$
 %     \end{itemize}
 % \end{frame}
 
-
 \begin{frame}{Invariant neural diffusion processes}
     \vspace{3mm}
     \begin{proposition}{Invariant Neural Diffusion Processes}{}
         \label{prop:inv_prior}
-    The denoising process on functions induced by
-    \begin{align}\label{eq:approx_backward_SDE}
-        \textstyle 
-        \rmd \bwd_t^\theta(\x) &= \hlblue{\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \mathbf{s}^K_\theta(T - t, \x, \bwd_t(\x)) \} \beta_{T-t}} \rmd t \nonumber \\
-        &\quad + \hlred{\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t,
-      \end{align}
-    %  the time-reversal SDE \eqref{eq:backward_SDE} where the score is approximated by a score network $\mathbf{s}_\theta: [0, T] \times \X^n \times \Y^n \rightarrow \rmT \Y^n$, 
-     and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
+    The denoising process on functions as defined above and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
+     \pause
      \begin{enumerate}
-        \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), and
+        \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), i.e.
+        $$
+        m(g \cdot x) = \rho(g) m(x)\quad\text{and}\quad k(g \cdot x, g \cdot x') = \rho(g)k(x,x')\rho(g)^\top,
+        $$
+        \pause
+        \vspace{-1cm}
         \item the score network is $G$-equivariant vector field, i.e.
         $$
-        \mathbf{s}^K_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y)\text{ for all }\x \in \X, g \in G.
+        \mathbf{s}_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y),
         $$
+        for all $\x \in \X, g \in G.$
      \end{enumerate}
     \end{proposition}
 
 \end{frame}
+
+
+% \begin{frame}{Invariant neural diffusion processes}
+%     \vspace{3mm}
+%     \begin{proposition}{Invariant Neural Diffusion Processes}{}
+%         \label{prop:inv_prior}
+%     The denoising process on functions induced by
+%     \begin{align}\label{eq:approx_backward_SDE}
+%         \textstyle 
+%         \rmd \bwd_t^\theta(\x) &= \hlblue{\{-\tfrac{1}{2} (m(\x) - \bwd_t(\x)) + \mathbf{s}^K_\theta(T - t, \x, \bwd_t(\x)) \} \beta_{T-t}} \rmd t \nonumber \\
+%         &\quad + \hlred{\beta_{T-t}^{1/2} \mathrm{K}(\x,\x)^{1/2}} \rmd \bfB_t,
+%       \end{align}
+%     %  the time-reversal SDE \eqref{eq:backward_SDE} where the score is approximated by a score network $\mathbf{s}_\theta: [0, T] \times \X^n \times \Y^n \rightarrow \rmT \Y^n$, 
+%      and with initial sample given by $p(\bar{\fwd}_0) = \mathrm{GP}(m, k)$ is G-invariant if
+%      \begin{enumerate}
+%         \item $m$ and $k$ are both $G$-equivariant (i.e. G-invariant Gaussian process), and
+%         \item the score network is $G$-equivariant vector field, i.e.
+%         $$
+%         \mathbf{s}^K_\theta(t, g\cdot \x, \rho(g) \y) = \rho(g) \mathbf{s}_\theta(t, \x, \y)\text{ for all }\x \in \X, g \in G.
+%         $$
+%      \end{enumerate}
+%     \end{proposition}
+
+% \end{frame}
 
 % \begin{frame}{Invariant Gaussian processes}
     
@@ -500,7 +523,7 @@ $$
 
 \end{frame}
 
-\section{Conditional processes}
+% \section{Conditional processes}
 
 % \begin{frame}{Equivariant conditional processes}
 %     Let $\mathcal{C} = \{(x_n, y_n)\}_{n}$ be a context dataset of input and ouptut pair.
@@ -556,20 +579,28 @@ $$
 \section{Conditional sampling}
 
 \begin{frame}{Conditional sampling in diffusion models}
-\textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$
-Often the condition is a property (e.g., caption).
+    \textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
+    \pause
+    \begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/conditional_dalle.png}
+    \caption{$p(image \mid text)$}
+    \end{figure}
+    Often the condition is a property (e.g., caption).
+    \end{frame}
+    
+    \begin{frame}{Conditional sampling in Neural Diffusion Processes}
+    % \textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
+    
+    Condition is a subspace of the state space: $\fwd^\mathcal{C} = (y^{(1)}, \ldots, y^{(m)})$.
+    \begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/conditioning_gp.png}
+    % \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}
+    \caption{Conditional samples $p(\cdot \mid \fwd^\mathcal{C})$.}
+    \end{figure}
 \pause
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{images/conditional_dalle.png}
-\caption{$p(image \mid text)$}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Conditional sampling in diffusion models}
-\textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
-Condition is a subspace of the state space: $y = (y^{(1)}, \ldots, y^{(m)})$ and $\mathcal{C} = (y^{(m+1)},\ldots, y^{(n)})$.
-\pause
+\vspace{-5mm}
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}
@@ -577,11 +608,33 @@ Condition is a subspace of the state space: $y = (y^{(1)}, \ldots, y^{(m)})$ and
 \end{figure}
 \end{frame}
 
+% \begin{frame}{Conditional sampling in diffusion models}
+% \textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$
+% Often the condition is a property (e.g., caption).
+% \pause
+% \begin{figure}
+% \centering
+% \includegraphics[width=\linewidth]{images/conditional_dalle.png}
+% \caption{$p(image \mid text)$}
+% \end{figure}
+% \end{frame}
+
+% \begin{frame}{Conditional sampling in diffusion models}
+% \textbf{Goal:} Sample from $y \sim p(\cdot \mid \mathcal{C})$ given a condition $\mathcal{C}$.\\
+% Condition is a subspace of the state space: $y = (y^{(1)}, \ldots, y^{(m)})$ and $\mathcal{C} = (y^{(m+1)},\ldots, y^{(n)})$.
+% \pause
+% \begin{figure}
+% \centering
+% \includegraphics[width=\linewidth,trim={5cm 0 5cm 0},clip]{images/example_2d/conditional.pdf}
+% \caption{$p(y \mid y^{(2)} = -1)$}
+% \end{figure}
+% \end{frame}
+
 
 \begin{frame}{Conditional sampling in diffusion models}
-In the reverse process we need to follow the \textbf{Conditional Score}
+In the reverse process we need to follow the \textbf{conditional} score
 $$
-\nabla \log p_t(\fwd_t) \implies \nabla \log p_t(\fwd_t \mid \mathcal{C})
+\nabla \log p_t(\fwd_t) \rightarrow \hlgreen{\nabla \log p_t(\fwd_t \mid \fwd^\mathcal{C})}
 $$
 \pause
 \begin{enumerate}
@@ -595,13 +648,13 @@ $$
 
 
 \begin{frame}{Langevin Dynamics based Conditional Sampling}
-Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}$
-\begin{align*}
-\nabla_{\fwd_t} \log p_t(\fwd_t \mid \fwd_0^\mathcal{C})
-&= \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd_0^\mathcal{C}) - \nabla_{\fwd_t} \log p_t(\fwd_0^\mathcal{C})\\
-&= \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd_0^\mathcal{C})
-\end{align*}
+Applying Bayes' rule to the conditional score gives
+\begin{equation*}
+\hlgreen{\nabla_{\fwd_t} \log p_t(\fwd_t \mid \fwd^\mathcal{C})} = \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd^\mathcal{C}) - \nabla_{\fwd_t} \log p_t(\fwd^\mathcal{C}) = \nabla_{\fwd_t} \log p_t(\fwd_t, \fwd^\mathcal{C})
+\end{equation*}
 \pause
+
+\textbf{Sampling algorithm}
 \begin{center}
 \begin{minipage}[c]{0.8\linewidth}
 \begin{itemize}
@@ -611,7 +664,7 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
 \end{minipage}
 \end{center}
 \pause
-\vspace{-5em}
+\vspace{-5.4em}
 \begin{figure}
     \centering
     \begin{center}
@@ -855,11 +908,12 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
             \small
             \centering
             \caption{
-                Mean test log-likelihood (TLL) ($\uparrow$) $\pm$ 1 standard error estimated over 4096 test samples are reported.
+                Mean test log-likelihood (higher is better)
+                % $\pm$ 1 standard error estimated over 4096 test samples are reported.
                 % Statistically significant best non-GP model is in \textbf{bold}.
                 % `*' stands for a TLL below $-10$.
-                NP baselines from \cite{bruinsma2020Gaussian}.
-                \label{tab:1d_regression}
+                % NP baselines from \cite{bruinsma2020Gaussian}.
+                % \label{tab:1d_regression}
                 }
         \setlength{\tabcolsep}{2.pt}
         % \begin{tabular}{llccccc}
@@ -874,7 +928,59 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
         % \rowcolor{pearDark!20}
         & \cellcolor{pearDark!20}\scshape $\mathrm{T}(1)-$\method & \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.72} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.32} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\mathbf{-0.38} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.04 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.64} { \pm \scriptstyle 0.08 }$\\
         % \rowcolor{pearDark!20} 
-        & \scshape NDP\textsuperscript{*} &  $\hphantom{-}\mathbf{0.71} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.03 }$&  $\mathbf{-0.37} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.04 }$&  $\hphantom{-}\mathbf{0.64} { \pm \scriptstyle 0.08 }$\\
+        & \scshape NDP &  $\hphantom{-}\mathbf{0.71} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.03 }$&  $\mathbf{-0.37} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.04 }$&  $\hphantom{-}\mathbf{0.64} { \pm \scriptstyle 0.08 }$\\
+        & \scshape GNP& $\hphantom{-}\mathbf{0.70} { \pm \scriptstyle 0.01 }$& $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.01 }$& $-0.47 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.42 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.10 { \pm \scriptstyle 0.02 }$\\
+        & \scshape ConvNP& $-0.46 { \pm \scriptstyle 0.01 }$& $-0.67 { \pm \scriptstyle 0.01 }$& $-1.02 { \pm \scriptstyle 0.01 }$& $\hphantom{-}1.20 { \pm \scriptstyle 0.01 }$& $-0.50 { \pm \scriptstyle 0.02 }$\\
+        
+        \midrule
+        \\
+        \\
+        \\
+        \\
+        \\
+        % \parbox[t]{2mm}{\multirow{5}{*}{\rotatebox[origin=c]{90}{\textsc  {\scalefont{.85} Generalisat}.}}}
+        % & \scshape GP (optimum)& $\hphantom{-}0.70 { \pm \scriptstyle 0.00 }$& $\hphantom{-}0.31 { \pm \scriptstyle 0.00 }$& $-0.32 { \pm \scriptstyle 0.00 }$& -& -\\
+        % & \cellcolor{pearDark!20}\scshape$\mathrm{T}(1)-$\method & \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.70} { \pm \scriptstyle 0.02 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.31} { \pm \scriptstyle 0.02 }$& \cellcolor{pearDark!20} $\mathbf{-0.38} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.62} { \pm \scriptstyle 0.02 }$\\
+        % &  \scshape NDP\textsuperscript{*} & *& *& *& *& *\\
+        % & \scshape GNP& $\hphantom{-}\mathbf{0.69} { \pm \scriptstyle 0.01 }$& $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.01 }$& $-0.47 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.42 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.10 { \pm \scriptstyle 0.02 }$\\
+        % & \scshape ConvNP& $-0.46 { \pm \scriptstyle 0.01 }$& $-0.67 { \pm \scriptstyle 0.01 }$& $-1.02 { \pm \scriptstyle 0.01 }$& $\hphantom{-}1.19 { \pm \scriptstyle 0.01 }$& $-0.53 { \pm \scriptstyle 0.02 }$\\
+        \bottomrule
+        \end{tabular}
+        \end{table}
+      
+    % \end{center}
+    
+\end{frame}
+
+
+\begin{frame}{1D regression: Predictive log-likelihood (Cont'd)}
+    % \begin{center}
+
+        \begin{table}[b]
+            \small
+            \centering
+            \caption{
+                Mean test log-likelihood (higher is better)
+                % $\pm$ 1 standard error estimated over 4096 test samples are reported.
+                % Statistically significant best non-GP model is in \textbf{bold}.
+                % `*' stands for a TLL below $-10$.
+                % NP baselines from \cite{bruinsma2020Gaussian}.
+                % \label{tab:1d_regression}
+                }
+        \setlength{\tabcolsep}{2.pt}
+        % \begin{tabular}{llccccc}
+        \begin{tabular}{llrrrrr}
+        \toprule
+         & & \multicolumn{1}{c}{\scshape SE} & \multicolumn{1}{c}{\scshape Mat\'ern$(\tfrac52)$} & \multicolumn{1}{c}{\scshape Weakly Per.} & \multicolumn{1}{c}{\scshape Sawtooth} & \multicolumn{1}{c}{\scshape Mixture}\\
+        
+        \midrule
+        % \multicolumn{6}{l}{\textsc{Interpolation}} \\[0.5em]
+         \parbox[t]{2mm}{\multirow{5}{*}{\rotatebox[origin=c]{90}{\textsc{\scalefont{.85} Interpolat}.}}}
+         & \scshape GP (optimum)& $\hphantom{-}0.70 { \pm \scriptstyle 0.00 }$& $\hphantom{-}0.31 { \pm \scriptstyle 0.00 }$& $-0.32 { \pm \scriptstyle 0.00 }$& - & - \\
+        % \rowcolor{pearDark!20}
+        & \cellcolor{pearDark!20}\scshape $\mathrm{T}(1)-$\method & \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.72} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.32} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\mathbf{-0.38} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.04 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.64} { \pm \scriptstyle 0.08 }$\\
+        % \rowcolor{pearDark!20} 
+        & \scshape NDP &  $\hphantom{-}\mathbf{0.71} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.03 }$&  $\mathbf{-0.37} { \pm \scriptstyle 0.03 }$&  $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.04 }$&  $\hphantom{-}\mathbf{0.64} { \pm \scriptstyle 0.08 }$\\
         & \scshape GNP& $\hphantom{-}\mathbf{0.70} { \pm \scriptstyle 0.01 }$& $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.01 }$& $-0.47 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.42 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.10 { \pm \scriptstyle 0.02 }$\\
         & \scshape ConvNP& $-0.46 { \pm \scriptstyle 0.01 }$& $-0.67 { \pm \scriptstyle 0.01 }$& $-1.02 { \pm \scriptstyle 0.01 }$& $\hphantom{-}1.20 { \pm \scriptstyle 0.01 }$& $-0.50 { \pm \scriptstyle 0.02 }$\\
         
@@ -882,7 +988,7 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
         \parbox[t]{2mm}{\multirow{5}{*}{\rotatebox[origin=c]{90}{\textsc  {\scalefont{.85} Generalisat}.}}}
         & \scshape GP (optimum)& $\hphantom{-}0.70 { \pm \scriptstyle 0.00 }$& $\hphantom{-}0.31 { \pm \scriptstyle 0.00 }$& $-0.32 { \pm \scriptstyle 0.00 }$& -& -\\
         & \cellcolor{pearDark!20}\scshape$\mathrm{T}(1)-$\method & \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.70} { \pm \scriptstyle 0.02 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.31} { \pm \scriptstyle 0.02 }$& \cellcolor{pearDark!20} $\mathbf{-0.38} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{3.39} { \pm \scriptstyle 0.03 }$& \cellcolor{pearDark!20} $\hphantom{-}\mathbf{0.62} { \pm \scriptstyle 0.02 }$\\
-        &  \scshape NDP\textsuperscript{*} & *& *& *& *& *\\
+        &  \scshape NDP & *& *& *& *& *\\
         & \scshape GNP& $\hphantom{-}\mathbf{0.69} { \pm \scriptstyle 0.01 }$& $\hphantom{-}\mathbf{0.30} { \pm \scriptstyle 0.01 }$& $-0.47 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.42 { \pm \scriptstyle 0.01 }$& $\hphantom{-}0.10 { \pm \scriptstyle 0.02 }$\\
         & \scshape ConvNP& $-0.46 { \pm \scriptstyle 0.01 }$& $-0.67 { \pm \scriptstyle 0.01 }$& $-1.02 { \pm \scriptstyle 0.01 }$& $\hphantom{-}1.19 { \pm \scriptstyle 0.01 }$& $-0.53 { \pm \scriptstyle 0.02 }$\\
         \bottomrule
@@ -892,7 +998,6 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
     % \end{center}
     
 \end{frame}
-
 
 % \begin{frame}{1D regression: Kernel ablation}
 
@@ -918,12 +1023,12 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
             \textsc{Model} & \scshape SE & \scshape Curl-free & \scshape Div-free \\
             \midrule
             \scshape GP & ${0.56_{\pm 0.00}}$ & ${0.66_{\pm 0.00}}$ & ${0.66_{\pm 0.00}}$ \\
-            \scshape NDP\textsuperscript{*} & ${0.55_{\pm 0.00}}$ & ${0.62_{\pm 0.01}}$ & ${0.62_{\pm 0.01}}$ \\
+            \scshape NDP & ${0.55_{\pm 0.00}}$ & ${0.62_{\pm 0.01}}$ & ${0.62_{\pm 0.01}}$ \\
             \rowcolor{pearDark!20} $\mathrm{E}(2)$\scshape-\method & $\bm{0.56_{\pm 0.01}}$ & $\bm{0.65_{\pm 0.01}}$ & $\bm{0.66_{\pm 0.01}}$ \\
-            \midrule
-            \scshape GP (diag.) & ${-1.56_{\pm 0.00}}$ & ${-1.47_{\pm 0.00}}$ & ${-1.47_{\pm 0.00}}$ \\
-            $\mathrm{T}(2)$\scshape-ConvCNP & ${-1.71_{\pm 0.01}}$ & ${-1.77_{\pm 0.01}}$ & ${-1.76_{\pm 0.00}}$ \\
-            $\mathrm{E}(2)$\scshape-SteerCNP & ${-1.61_{\pm 0.00}}$ & ${-1.57_{\pm 0.00}}$ & ${-1.57_{\pm 0.01}}$ \\
+            % \midrule
+            % \scshape GP (diag.) & ${-1.56_{\pm 0.00}}$ & ${-1.47_{\pm 0.00}}$ & ${-1.47_{\pm 0.00}}$ \\
+            % $\mathrm{T}(2)$\scshape-ConvCNP & ${-1.71_{\pm 0.01}}$ & ${-1.77_{\pm 0.01}}$ & ${-1.76_{\pm 0.00}}$ \\
+            % $\mathrm{E}(2)$\scshape-SteerCNP & ${-1.61_{\pm 0.00}}$ & ${-1.57_{\pm 0.00}}$ & ${-1.57_{\pm 0.01}}$ \\
             \bottomrule
             \end{tabular}
     \end{table}
@@ -989,11 +1094,11 @@ Focussing on the function setting, the context $\mathcal{C} = \fwd_0^\mathcal{C}
     % 
     \begin{itemize}%[wide]
         \item \(f: \R \to \c{S}^2\) with hurricane trajectory data from \cite{IBTrACSv4data}.
-        \item  ${\fwd}_t(\x) = ({\fwd}_t(x_1), \cdots, {\fwd}_t(x_n)) \in \M^n$ for any $(x_1, \dots, x_n) \in \mathbb{R}^n$
+        % \item  ${\fwd}_t(\x) = ({\fwd}_t(x_1), \cdots, {\fwd}_t(x_n)) \in \M^n$ for any $(x_1, \dots, x_n) \in \mathbb{R}^n$
         \item $\rmd {\bfY}_t(\x_k) = \hlblue{- \cancelto{0}{b({\bfY}_t(\x_k))}} \rmd t + \hlred{\sqrt{\beta_t }}  \rmd \bfB_t^\M$  $\forall k=1,\dots,n$ \cite{bortoli2022riemannian}
         \item $p({\bfY}_t(\x)) \underset{t \rightarrow \infty}{\longrightarrow} \mathrm{U}(\c{S}^2)^{\otimes n}$.
     \end{itemize}
-    
+   \vspace{3mm} 
 
         
     \begin{figure}

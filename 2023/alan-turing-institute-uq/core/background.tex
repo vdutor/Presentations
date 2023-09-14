@@ -31,6 +31,7 @@ The \textbf{Forward process} progressively perturbs the data following a SDE
     \rmd \fwd_t = \hlblue{-\fwd_t} \rmd t + \hlred{\sqrt{2}} \rmd \bfB_t,
 \end{equation}
 where $\bfB_t$ is Brownian motion (think of it conceptually as $\rmd \bfB_t / \rmd t \sim \mathcal{N}(0, \rmd t)$).
+\pause
 \\
 \vspace{3mm}
 \textbf{Example: 2D Gaussian data}
@@ -92,6 +93,7 @@ Matching objective
      = \mathbb{E} [\|  \hlyellow{\mathrm{s}_\theta(t, \fwd_t)} - \nabla \log p_{t}({\fwd}_t| \fwd_0)\|^2].
 \end{equation}
 % \end{itemize}
+\pause
 \textbf{Example}
 \begin{equation*}
   \rmd \bwd_t = \left[ -{\bwd_t} + 2 \hlyellow{s_\theta(t,\bwd_t)}\right] \rmd t + \sqrt{2} \rmd \bfB_t,
